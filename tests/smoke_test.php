@@ -40,9 +40,9 @@ final class smoke_test extends \advanced_testcase {
     public function test_privacy_metadata(): void {
         $collection = privacy\provider::get_metadata(new \core_privacy\local\metadata\collection('local_aiquestiongen'));
         $names = array_map(fn($item) => $item->get_name(), $collection->get_collection());
-        $this->assertContains('local_aiqg_source', $names);
-        $this->assertContains('local_aiqg_job', $names);
-        $this->assertContains('local_aiqg_item', $names);
+        $this->assertContains('local_aiquestiongen_source', $names);
+        $this->assertContains('local_aiquestiongen_job', $names);
+        $this->assertContains('local_aiquestiongen_item', $names);
         $this->assertContains('aiprovider', $names);
     }
 

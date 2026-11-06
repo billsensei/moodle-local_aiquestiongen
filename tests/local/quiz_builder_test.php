@@ -47,12 +47,12 @@ final class quiz_builder_test extends \advanced_testcase {
             'text' => "Tom was reluctant to leave.\n\nHe had lived there for years.", 'sourcefileitemid' => 0,
             'timecreated' => time(),
         ];
-        $source->id = $DB->insert_record('local_aiqg_source', $source);
+        $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
         $job = (object) [
             'sourceid' => $source->id, 'settings' => json_encode(['cefr' => 'B1']), 'status' => 'done',
             'tokensused' => 0, 'timecreated' => time(),
         ];
-        $job->id = $DB->insert_record('local_aiqg_job', $job);
+        $job->id = $DB->insert_record('local_aiquestiongen_job', $job);
 
         // A true/false statement first, then an essay.
         $tf = [
@@ -65,7 +65,7 @@ final class quiz_builder_test extends \advanced_testcase {
         ];
         $drafts = [['truefalse', $tf], ['essay', $essay]];
         foreach ($drafts as [$qtype, $payload]) {
-            $DB->insert_record('local_aiqg_item', (object) [
+            $DB->insert_record('local_aiquestiongen_item', (object) [
                 'jobid' => $job->id, 'qtype' => $qtype, 'status' => 'approved', 'timemodified' => 0,
                 'payload' => json_encode($payload + ['flagged' => false, 'issues' => []]),
             ]);
@@ -242,7 +242,7 @@ final class quiz_builder_test extends \advanced_testcase {
             }
         }
         $this->assertSame(0, $DB->count_records('question', ['qtype' => 'truefalse']));
-        $this->assertSame(0, $DB->count_records('local_aiqg_item', ['status' => 'published']));
+        $this->assertSame(0, $DB->count_records('local_aiquestiongen_item', ['status' => 'published']));
     }
 
     /**

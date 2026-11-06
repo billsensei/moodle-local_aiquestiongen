@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="local_aiqg_source" COMMENT="Uploaded or pasted source articles">
+    <TABLE NAME="local_aiquestiongen_source" COMMENT="Uploaded or pasted source articles">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -20,7 +20,7 @@
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="local_aiqg_job" COMMENT="One generation run for a source article">
+    <TABLE NAME="local_aiquestiongen_job" COMMENT="One generation run for a source article">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sourceid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -33,13 +33,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="local_aiqg_source" REFFIELDS="id"/>
+        <KEY NAME="sourceid" TYPE="foreign" FIELDS="sourceid" REFTABLE="local_aiquestiongen_source" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="status" UNIQUE="false" FIELDS="status"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_aiqg_item" COMMENT="One draft question produced by a job">
+    <TABLE NAME="local_aiquestiongen_item" COMMENT="One draft question produced by a job">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="jobid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -51,7 +51,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="jobid" TYPE="foreign" FIELDS="jobid" REFTABLE="local_aiqg_job" REFFIELDS="id"/>
+        <KEY NAME="jobid" TYPE="foreign" FIELDS="jobid" REFTABLE="local_aiquestiongen_job" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="jobid-status" UNIQUE="false" FIELDS="jobid, status"/>

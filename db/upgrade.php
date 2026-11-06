@@ -29,10 +29,24 @@
  * @return bool
  */
 function xmldb_local_aiquestiongen_upgrade(int $oldversion): bool {
+    global $DB;
+    $dbman = $DB->get_manager();
+
     if ($oldversion < 2026110608) {
         // The API key used to be saved as plain text; it is now encrypted.
         \local_aiquestiongen\ai\api_key::encrypt_legacy();
         upgrade_plugin_savepoint(true, 2026110608, 'local', 'aiquestiongen');
+    }
+
+    if ($oldversion < 2026110610) {
+        // The tables now start with the full plugin name, as Moodle's plugin checks expect.
+        foreach (['source', 'job', 'item'] as $name) {
+            $old = new xmldb_table('local_aiqg_' . $name);
+            if ($dbman->table_exists($old) && !$dbman->table_exists('local_aiquestiongen_' . $name)) {
+                $dbman->rename_table($old, 'local_aiquestiongen_' . $name);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026110610, 'local', 'aiquestiongen');
     }
 
     return true;

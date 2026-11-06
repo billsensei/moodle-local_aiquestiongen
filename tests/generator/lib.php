@@ -49,7 +49,7 @@ class local_aiquestiongen_generator extends component_generator_base {
         global $DB;
         $record = (array) $record;
 
-        $source = $DB->get_record('local_aiqg_source', [
+        $source = $DB->get_record('local_aiquestiongen_source', [
             'courseid' => $record['courseid'], 'userid' => $record['userid'], 'title' => $record['article'],
         ]);
         if (!$source) {
@@ -57,16 +57,16 @@ class local_aiquestiongen_generator extends component_generator_base {
                 'courseid' => $record['courseid'], 'userid' => $record['userid'], 'title' => $record['article'],
                 'text' => $record['text'] ?? self::ARTICLE, 'sourcefileitemid' => 0, 'timecreated' => time(),
             ];
-            $source->id = $DB->insert_record('local_aiqg_source', $source);
+            $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
         }
 
-        $job = $DB->get_record('local_aiqg_job', ['sourceid' => $source->id]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['sourceid' => $source->id]);
         if (!$job) {
             $job = (object) [
                 'sourceid' => $source->id, 'settings' => json_encode(['cefr' => 'B1', 'language' => 'English', 'target' => '']),
                 'status' => 'done', 'tokensused' => 0, 'timecreated' => time(),
             ];
-            $job->id = $DB->insert_record('local_aiqg_job', $job);
+            $job->id = $DB->insert_record('local_aiquestiongen_job', $job);
         }
 
         $payload = $this->payload($record['qtype'], $record['stem'], $record);
@@ -83,7 +83,7 @@ class local_aiquestiongen_generator extends component_generator_base {
             'jobid' => $job->id, 'qtype' => $record['qtype'], 'status' => ($record['status'] ?? '') ?: 'pending',
             'payload' => json_encode($payload), 'timemodified' => time(),
         ];
-        $item->id = $DB->insert_record('local_aiqg_item', $item);
+        $item->id = $DB->insert_record('local_aiquestiongen_item', $item);
         return $item;
     }
 

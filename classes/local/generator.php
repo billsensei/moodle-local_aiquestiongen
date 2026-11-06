@@ -56,11 +56,11 @@ class generator {
     public function run(int $jobid): void {
         global $DB;
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid], '*', MUST_EXIST);
-        $source = $DB->get_record('local_aiqg_source', ['id' => $job->sourceid], '*', MUST_EXIST);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid], '*', MUST_EXIST);
+        $source = $DB->get_record('local_aiquestiongen_source', ['id' => $job->sourceid], '*', MUST_EXIST);
         $settings = json_decode((string) $job->settings, true) ?: [];
 
-        $DB->set_field('local_aiqg_job', 'status', 'running', ['id' => $job->id]);
+        $DB->set_field('local_aiquestiongen_job', 'status', 'running', ['id' => $job->id]);
 
         try {
             $stored = 0;
@@ -184,7 +184,7 @@ class generator {
         $item['flagged'] = $issues !== [];
         $item['issues'] = $issues;
 
-        $DB->insert_record('local_aiqg_item', (object) [
+        $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid,
             'qtype' => $qtype,
             'payload' => json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
@@ -204,7 +204,7 @@ class generator {
     private function finish(int $jobid, string $status, string $error): void {
         global $DB;
 
-        $DB->update_record('local_aiqg_job', (object) [
+        $DB->update_record('local_aiquestiongen_job', (object) [
             'id' => $jobid,
             'status' => $status,
             'error' => $error === '' ? null : $error,

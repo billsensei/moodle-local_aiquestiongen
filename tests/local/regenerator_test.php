@@ -92,12 +92,12 @@ final class regenerator_test extends \advanced_testcase {
             'courseid' => $course->id, 'userid' => $user->id, 'title' => 'T',
             'text' => 'Tom was reluctant to leave.', 'sourcefileitemid' => 0, 'timecreated' => time(),
         ];
-        $source->id = $DB->insert_record('local_aiqg_source', $source);
+        $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
         $job = (object) [
             'sourceid' => $source->id, 'settings' => json_encode(['cefr' => 'B1', 'language' => 'English', 'target' => '']),
             'status' => 'done', 'tokensused' => 100, 'timecreated' => time(),
         ];
-        $job->id = $DB->insert_record('local_aiqg_job', $job);
+        $job->id = $DB->insert_record('local_aiquestiongen_job', $job);
         $payload = $payloadextra + [
             'type' => 'truefalse', 'stem' => 'Old statement.', 'correct' => false, 'feedbacktrue' => '',
             'feedbackfalse' => '', 'focus' => 'comprehension', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
@@ -106,7 +106,7 @@ final class regenerator_test extends \advanced_testcase {
             'jobid' => $job->id, 'qtype' => 'truefalse', 'status' => $status, 'timemodified' => 0,
             'payload' => json_encode($payload),
         ];
-        $item->id = $DB->insert_record('local_aiqg_item', $item);
+        $item->id = $DB->insert_record('local_aiquestiongen_item', $item);
         return [$item, $job, $source];
     }
 
@@ -121,7 +121,7 @@ final class regenerator_test extends \advanced_testcase {
         $client = $this->fake([self::tf_json('New statement.')]);
         $result = (new regenerator($client))->regenerate($item, $job, $source, '  Make it   easier  ');
 
-        $record = $DB->get_record('local_aiqg_item', ['id' => $item->id], '*', MUST_EXIST);
+        $record = $DB->get_record('local_aiquestiongen_item', ['id' => $item->id], '*', MUST_EXIST);
         $payload = json_decode($record->payload, true);
         $this->assertSame('New statement.', $payload['stem']);
         $this->assertTrue($payload['correct']);
@@ -130,7 +130,7 @@ final class regenerator_test extends \advanced_testcase {
         $this->assertSame(1, $payload['regenerations']);
         $this->assertSame('pending', $record->status);
         $this->assertSame('pending', $result->status);
-        $this->assertEquals(125, $DB->get_field('local_aiqg_job', 'tokensused', ['id' => $job->id]));
+        $this->assertEquals(125, $DB->get_field('local_aiquestiongen_job', 'tokensused', ['id' => $job->id]));
 
         // The prompt carries the comment (whitespace tidied), the old question and the earlier problem.
         $this->assertCount(1, $client->prompts);
@@ -176,7 +176,7 @@ final class regenerator_test extends \advanced_testcase {
         $client = $this->fake([$bad, self::tf_json('Second try.')]);
         (new regenerator($client))->regenerate($item, $job, $source);
         $this->assertCount(2, $client->prompts);
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $item->id]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]), true);
         $this->assertSame('Second try.', $payload['stem']);
 
         [$item, $job, $source] = $this->setup_item();
@@ -187,11 +187,11 @@ final class regenerator_test extends \advanced_testcase {
         } catch (\moodle_exception $e) {
             $this->assertSame('err_regenfailed', $e->errorcode);
         }
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $item->id]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]), true);
         $this->assertSame('Old statement.', $payload['stem']);
         $this->assertArrayNotHasKey('regenerations', $payload);
         // The tokens of the failed tries are still counted.
-        $this->assertEquals(150, $DB->get_field('local_aiqg_job', 'tokensused', ['id' => $job->id]));
+        $this->assertEquals(150, $DB->get_field('local_aiquestiongen_job', 'tokensused', ['id' => $job->id]));
     }
 
     /**
@@ -207,7 +207,7 @@ final class regenerator_test extends \advanced_testcase {
         } catch (ai_exception $e) {
             $this->assertStringContainsString('quota', $e->getMessage());
         }
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $item->id]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]), true);
         $this->assertSame('Old statement.', $payload['stem']);
     }
 

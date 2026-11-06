@@ -27,7 +27,7 @@ class item_presenter {
     /**
      * Export one draft.
      *
-     * @param \stdClass $item The local_aiqg_item record.
+     * @param \stdClass $item The local_aiquestiongen_item record.
      * @return array
      */
     public static function export(\stdClass $item): array {

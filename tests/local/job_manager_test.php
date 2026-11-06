@@ -40,7 +40,7 @@ final class job_manager_test extends \advanced_testcase {
             'courseid' => $course->id, 'userid' => $user->id, 'title' => 'T',
             'text' => 'Some text.', 'sourcefileitemid' => 0, 'timecreated' => time(),
         ];
-        $record->id = $DB->insert_record('local_aiqg_source', $record);
+        $record->id = $DB->insert_record('local_aiquestiongen_source', $record);
         return $record;
     }
 
@@ -56,7 +56,7 @@ final class job_manager_test extends \advanced_testcase {
             'cefr' => 'B2', 'count' => 4, 'target' => ' reluctant ', 'language' => 'Japanese',
         ]);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid], '*', MUST_EXIST);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid], '*', MUST_EXIST);
         $this->assertSame('queued', $job->status);
         $settings = json_decode($job->settings, true);
         $this->assertSame('B2', $settings['cefr']);
@@ -138,12 +138,12 @@ final class job_manager_test extends \advanced_testcase {
 
         $source = $this->make_source();
         $jobid = job_manager::create_job($source, $source->userid, ['cefr' => 'B1', 'count' => 3]);
-        $DB->set_field('local_aiqg_job', 'status', 'done', ['id' => $jobid]);
+        $DB->set_field('local_aiquestiongen_job', 'status', 'done', ['id' => $jobid]);
         $task = new \local_aiquestiongen\task\generate_questions();
         $task->set_custom_data(['jobid' => $jobid]);
         $task->execute();
 
-        $this->assertSame('done', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
+        $this->assertSame('done', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
     }
 
     /**
@@ -173,7 +173,7 @@ final class job_manager_test extends \advanced_testcase {
         $jobid = job_manager::create_job($source, $source->userid, [
             'cefr' => 'B1', 'count' => 0, 'tfcount' => 3, 'essaycount' => 2,
         ]);
-        $settings = json_decode($DB->get_field('local_aiqg_job', 'settings', ['id' => $jobid]), true);
+        $settings = json_decode($DB->get_field('local_aiquestiongen_job', 'settings', ['id' => $jobid]), true);
         $this->assertSame(0, $settings['count']);
         $this->assertSame(3, $settings['tfcount']);
         $this->assertSame(2, $settings['essaycount']);
@@ -196,10 +196,10 @@ final class job_manager_test extends \advanced_testcase {
         $task->set_custom_data(['jobid' => $jobid]);
         $task->execute();
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('failed', $job->status);
         $this->assertSame(get_string('disabled', 'local_aiquestiongen'), $job->error);
-        $this->assertEquals(0, $DB->count_records('local_aiqg_item', ['jobid' => $jobid]));
+        $this->assertEquals(0, $DB->count_records('local_aiquestiongen_item', ['jobid' => $jobid]));
         // No AI request was made, so no action was logged by core AI.
         $this->assertEquals(0, $DB->count_records('ai_action_register'));
     }

@@ -46,12 +46,12 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             'courseid' => $course->id, 'userid' => $user->id, 'title' => $title,
             'text' => 'Text of ' . $title, 'sourcefileitemid' => 0, 'timecreated' => 1700000000,
         ];
-        $source->id = $DB->insert_record('local_aiqg_source', $source);
-        $source->jobid = $DB->insert_record('local_aiqg_job', (object) [
+        $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
+        $source->jobid = $DB->insert_record('local_aiquestiongen_job', (object) [
             'sourceid' => $source->id, 'settings' => '{"cefr":"B1"}', 'status' => 'done', 'error' => null,
             'provider' => 'test-model', 'tokensused' => 42, 'timecreated' => 1700000100,
         ]);
-        $source->itemid = $DB->insert_record('local_aiqg_item', (object) [
+        $source->itemid = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $source->jobid, 'qtype' => 'truefalse', 'status' => 'pending',
             'payload' => '{"stem":"Draft of ' . $title . '"}', 'timemodified' => 1700000200,
         ]);
@@ -71,12 +71,12 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
      */
     private function counts(int $courseid): array {
         global $DB;
-        $sourceids = $DB->get_fieldset_select('local_aiqg_source', 'id', 'courseid = ?', [$courseid]);
+        $sourceids = $DB->get_fieldset_select('local_aiquestiongen_source', 'id', 'courseid = ?', [$courseid]);
         $jobids = [];
         if ($sourceids) {
-            $jobids = $DB->get_fieldset_select('local_aiqg_job', 'id', 'sourceid IN (' . implode(',', $sourceids) . ')');
+            $jobids = $DB->get_fieldset_select('local_aiquestiongen_job', 'id', 'sourceid IN (' . implode(',', $sourceids) . ')');
         }
-        $items = $jobids ? $DB->count_records_select('local_aiqg_item', 'jobid IN (' . implode(',', $jobids) . ')') : 0;
+        $items = $jobids ? $DB->count_records_select('local_aiquestiongen_item', 'jobid IN (' . implode(',', $jobids) . ')') : 0;
         $files = $DB->count_records_select(
             'files',
             "component = 'local_aiquestiongen' AND contextid = ? AND filename <> '.'",
@@ -98,7 +98,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             $declared[$item->get_name()] = array_keys($item->get_privacy_fields());
         }
 
-        foreach (['local_aiqg_source', 'local_aiqg_job', 'local_aiqg_item'] as $table) {
+        foreach (['local_aiquestiongen_source', 'local_aiquestiongen_job', 'local_aiquestiongen_item'] as $table) {
             $columns = array_diff(array_keys($DB->get_columns($table)), ['id']);
             $this->assertEqualsCanonicalizing($columns, $declared[$table], "Privacy metadata for $table is out of date");
         }
@@ -249,7 +249,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertSame([1, 1, 1, 1], $this->counts($course1->id), "Only the other user's article should remain");
         $this->assertSame([1, 1, 1, 1], $this->counts($course2->id), 'A context that was not approved is untouched');
         global $DB;
-        $owners = $DB->get_fieldset_select('local_aiqg_source', 'userid', 'courseid = ?', [$course1->id]);
+        $owners = $DB->get_fieldset_select('local_aiquestiongen_source', 'userid', 'courseid = ?', [$course1->id]);
         $this->assertEquals([$other->id], $owners);
     }
 
@@ -291,8 +291,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $question = $gen->get_plugin_generator('core_question')->create_question('truefalse', null, ['category' => $category->id]);
 
         $article = $this->make_article($user, $course);
-        $DB->set_field('local_aiqg_item', 'questionid', $question->id, ['id' => $article->itemid]);
-        $DB->set_field('local_aiqg_item', 'status', 'published', ['id' => $article->itemid]);
+        $DB->set_field('local_aiquestiongen_item', 'questionid', $question->id, ['id' => $article->itemid]);
+        $DB->set_field('local_aiquestiongen_item', 'status', 'published', ['id' => $article->itemid]);
 
         $approved = new approved_contextlist($user, 'local_aiquestiongen', [\context_course::instance($course->id)->id]);
         provider::delete_data_for_user($approved);

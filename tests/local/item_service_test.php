@@ -41,11 +41,11 @@ final class item_service_test extends \advanced_testcase {
             'courseid' => $course->id, 'userid' => $teacher->id, 'title' => 'T',
             'text' => 'Tom was reluctant to leave.', 'sourcefileitemid' => 0, 'timecreated' => time(),
         ];
-        $source->id = $DB->insert_record('local_aiqg_source', $source);
+        $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
         $job = (object) [
             'sourceid' => $source->id, 'settings' => '{}', 'status' => 'done', 'tokensused' => 0, 'timecreated' => time(),
         ];
-        $job->id = $DB->insert_record('local_aiqg_job', $job);
+        $job->id = $DB->insert_record('local_aiquestiongen_job', $job);
 
         $good = [
             'type' => 'multichoice', 'stem' => 'What does "reluctant" mean?',
@@ -64,7 +64,7 @@ final class item_service_test extends \advanced_testcase {
 
         $ids = [];
         foreach (['good1' => $good, 'good2' => $good, 'bad' => $bad] as $key => $payload) {
-            $ids[$key] = $DB->insert_record('local_aiqg_item', (object) [
+            $ids[$key] = $DB->insert_record('local_aiquestiongen_item', (object) [
                 'jobid' => $job->id, 'qtype' => 'multichoice', 'status' => 'pending',
                 'payload' => json_encode($payload), 'timemodified' => 0,
             ]);
@@ -80,14 +80,14 @@ final class item_service_test extends \advanced_testcase {
         $this->resetAfterTest();
         [, , , , $ids] = $this->make_job();
 
-        $good = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $ids['good1']]));
+        $good = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $ids['good1']]));
         $this->assertSame('A', $good['answers'][0]['letter']);
         $this->assertTrue($good['answers'][0]['correct']);
         $this->assertTrue($good['ispending']);
         $this->assertTrue($good['canedit']);
         $this->assertFalse($good['flagged']);
 
-        $bad = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $ids['bad']]));
+        $bad = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $ids['bad']]));
         $this->assertTrue($bad['flagged']);
         $this->assertSame([get_string('issue_correctcount', 'local_aiquestiongen')], $bad['issues']);
     }
@@ -103,7 +103,7 @@ final class item_service_test extends \advanced_testcase {
 
         [$item, $source, $context] = item_service::load_item($ids['good1'], $teacher->id);
         $item = item_service::set_status($item, $source, $context, 'approved');
-        $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['good1']]));
+        $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['good1']]));
 
         $events = array_filter($sink->get_events(), fn($e) => $e instanceof \local_aiquestiongen\event\item_approved);
         $this->assertCount(1, $events);
@@ -114,7 +114,7 @@ final class item_service_test extends \advanced_testcase {
         $this->assertCount(1, $events);
 
         item_service::set_status($item, $source, $context, 'pending');
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['good1']]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['good1']]));
     }
 
     /**
@@ -132,10 +132,10 @@ final class item_service_test extends \advanced_testcase {
         } catch (\moodle_exception $e) {
             $this->assertSame('err_cannotapprove', $e->errorcode);
         }
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['bad']]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['bad']]));
 
         item_service::set_status($item, $source, $context, 'rejected');
-        $this->assertSame('rejected', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['bad']]));
+        $this->assertSame('rejected', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['bad']]));
     }
 
     /**
@@ -154,7 +154,7 @@ final class item_service_test extends \advanced_testcase {
             $this->assertSame('err_badstatus', $e->errorcode);
         }
 
-        $DB->set_field('local_aiqg_item', 'status', 'published', ['id' => $item->id]);
+        $DB->set_field('local_aiquestiongen_item', 'status', 'published', ['id' => $item->id]);
         $item->status = 'published';
         $this->expectException(\moodle_exception::class);
         item_service::update_item($item, $source, 'x', []);
@@ -177,7 +177,7 @@ final class item_service_test extends \advanced_testcase {
         ];
         item_service::update_item($item, $source, '  New stem?  ', $answers);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $ids['bad']]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $ids['bad']]), true);
         $this->assertSame('New stem?', $payload['stem']);
         $this->assertFalse($payload['flagged']);
         $this->assertSame([], $payload['issues']);
@@ -201,7 +201,7 @@ final class item_service_test extends \advanced_testcase {
         ];
         item_service::update_item($item, $source, 'Edited?', $answers);
 
-        $record = $DB->get_record('local_aiqg_item', ['id' => $ids['good1']]);
+        $record = $DB->get_record('local_aiquestiongen_item', ['id' => $ids['good1']]);
         $payload = json_decode($record->payload, true);
         $this->assertSame('Edited?', $payload['stem']);
         $this->assertTrue($payload['flagged']);
@@ -221,7 +221,7 @@ final class item_service_test extends \advanced_testcase {
         $stem = 'Is 3 < 5 & "reluctant" <b>bold</b>?';
         item_service::update_item($item, $source, $stem, json_decode($item->payload, true)['answers']);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $ids['good1']]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $ids['good1']]), true);
         $this->assertSame($stem, $payload['stem']);
     }
 
@@ -233,21 +233,21 @@ final class item_service_test extends \advanced_testcase {
         $this->resetAfterTest();
         [$teacher, , , , $ids] = $this->make_job();
         [$job, $source, $context] = item_service::load_job(
-            $DB->get_field('local_aiqg_item', 'jobid', ['id' => $ids['good1']]),
+            $DB->get_field('local_aiquestiongen_item', 'jobid', ['id' => $ids['good1']]),
             $teacher->id
         );
 
         [$changed, $skipped] = item_service::set_status_bulk($job, $source, $context, 'multichoice', 'approved');
         $this->assertCount(2, $changed);
         $this->assertSame(1, $skipped);
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['bad']]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['bad']]));
 
         // Already-approved drafts are not touched by reject-all; only pending ones are.
         [$changed, $skipped] = item_service::set_status_bulk($job, $source, $context, 'multichoice', 'rejected');
         $this->assertCount(1, $changed);
         $this->assertSame(0, $skipped);
-        $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['good1']]));
-        $this->assertSame('rejected', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['bad']]));
+        $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['good1']]));
+        $this->assertSame('rejected', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['bad']]));
     }
 
     /**
@@ -285,14 +285,14 @@ final class item_service_test extends \advanced_testcase {
      */
     private function add_tf_and_essay(int $jobid): array {
         global $DB;
-        $tf = $DB->insert_record('local_aiqg_item', (object) [
+        $tf = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'truefalse', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'truefalse', 'stem' => 'Tom stayed.', 'correct' => false, 'feedbacktrue' => 'No.',
                 'feedbackfalse' => 'Yes.', 'focus' => 'comprehension', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $essay = $DB->insert_record('local_aiqg_item', (object) [
+        $essay = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'essay', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'essay', 'stem' => 'Why did Tom leave?', 'modelanswer' => 'He had to.',
@@ -311,7 +311,7 @@ final class item_service_test extends \advanced_testcase {
         [, , , $job] = $this->make_job();
         [$tfid, $essayid] = $this->add_tf_and_essay($job->id);
 
-        $tf = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $tfid]));
+        $tf = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $tfid]));
         $this->assertTrue($tf['istf']);
         $this->assertFalse($tf['ismc']);
         $this->assertTrue($tf['correctfalse']);
@@ -319,7 +319,7 @@ final class item_service_test extends \advanced_testcase {
         $this->assertSame('Yes.', $tf['feedbackfalse']);
         $this->assertSame([], $tf['answers']);
 
-        $essay = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $essayid]));
+        $essay = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $essayid]));
         $this->assertTrue($essay['isessay']);
         $this->assertSame('He had to.', $essay['modelanswer']);
         $this->assertSame('Gives a reason.', $essay['rubric']);
@@ -337,7 +337,7 @@ final class item_service_test extends \advanced_testcase {
 
         item_service::update_item($item, $source, 'Tom left.', [], ['correct' => true, 'feedbacktrue' => 'Good.']);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $tfid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $tfid]), true);
         $this->assertSame('Tom left.', $payload['stem']);
         $this->assertTrue($payload['correct']);
         $this->assertSame('Good.', $payload['feedbacktrue']);
@@ -357,7 +357,7 @@ final class item_service_test extends \advanced_testcase {
 
         $item = item_service::update_item($item, $source, 'New prompt?', [], ['modelanswer' => 'Changed.', 'rubric' => '  ']);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $essayid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $essayid]), true);
         $this->assertSame('Changed.', $payload['modelanswer']);
         $this->assertTrue($payload['flagged']);
         $this->assertSame(['norubric'], $payload['issues']);
@@ -380,7 +380,7 @@ final class item_service_test extends \advanced_testcase {
         foreach ($this->add_tf_and_essay($job->id) as $id) {
             [$item, $source, $context] = item_service::load_item($id, $teacher->id);
             item_service::set_status($item, $source, $context, 'approved');
-            $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $id]));
+            $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $id]));
         }
     }
 
@@ -397,9 +397,9 @@ final class item_service_test extends \advanced_testcase {
         [$changed, $skipped] = item_service::set_status_bulk($job, $source, $context, 'truefalse', 'approved');
         $this->assertCount(1, $changed);
         $this->assertSame(0, $skipped);
-        $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $tfid]));
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $essayid]));
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $ids['good1']]));
+        $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $tfid]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $essayid]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $ids['good1']]));
     }
 
     /**
@@ -410,7 +410,7 @@ final class item_service_test extends \advanced_testcase {
      */
     private function add_fill_items(int $jobid): array {
         global $DB;
-        $typed = $DB->insert_record('local_aiqg_item', (object) [
+        $typed = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'multianswer', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'multianswer', 'stem' => 'Tom was ____ to leave.', 'answer' => 'reluctant',
@@ -418,7 +418,7 @@ final class item_service_test extends \advanced_testcase {
                 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $chosen = $DB->insert_record('local_aiqg_item', (object) [
+        $chosen = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'gapselect', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'gapselect', 'stem' => 'Tom was ____ to leave.', 'answer' => 'reluctant',
@@ -438,14 +438,14 @@ final class item_service_test extends \advanced_testcase {
         [, , , $job] = $this->make_job();
         [$typedid, $chosenid] = $this->add_fill_items($job->id);
 
-        $typed = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $typedid]));
+        $typed = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $typedid]));
         $this->assertTrue($typed['iscloze']);
         $this->assertFalse($typed['isgap']);
         $this->assertSame('reluctant', $typed['fillanswer']);
         $this->assertSame('unwilling', $typed['alternatives']);
         $this->assertSame('', $typed['distractors']);
 
-        $chosen = item_presenter::export($DB->get_record('local_aiqg_item', ['id' => $chosenid]));
+        $chosen = item_presenter::export($DB->get_record('local_aiquestiongen_item', ['id' => $chosenid]));
         $this->assertTrue($chosen['isgap']);
         $this->assertSame("eager\nangry\ntired", $chosen['distractors']);
     }
@@ -464,7 +464,7 @@ final class item_service_test extends \advanced_testcase {
             'answer' => ' unwilling ', 'alternatives' => "reluctant\n\n  \nloath\r\n",
         ]);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $typedid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $typedid]), true);
         $this->assertSame('unwilling', $payload['answer']);
         $this->assertSame(['reluctant', 'loath'], $payload['alternatives']);
         $this->assertSame('Tom was ____ to go.', $payload['stem']);
@@ -482,7 +482,7 @@ final class item_service_test extends \advanced_testcase {
 
         // Only two distractors, and no blank.
         $item = item_service::update_item($item, $source, 'Tom was reluctant.', [], ['distractors' => "eager\nangry"]);
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['id' => $chosenid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $chosenid]), true);
         $this->assertTrue($payload['flagged']);
         $this->assertEqualsCanonicalizing(['noblank', 'distractorcount'], $payload['issues']);
 
@@ -502,7 +502,7 @@ final class item_service_test extends \advanced_testcase {
 
         [$changed] = item_service::set_status_bulk($job, $source, $context, 'multianswer', 'approved');
         $this->assertCount(1, $changed);
-        $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $typedid]));
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $chosenid]));
+        $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $typedid]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $chosenid]));
     }
 }

@@ -28,7 +28,7 @@ class questions_published extends \core\event\base {
     protected function init(): void {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
-        $this->data['objecttable'] = 'local_aiqg_job';
+        $this->data['objecttable'] = 'local_aiquestiongen_job';
     }
 
     #[\Override]
@@ -49,7 +49,7 @@ class questions_published extends \core\event\base {
 
     #[\Override]
     public static function get_objectid_mapping(): array {
-        return ['db' => 'local_aiqg_job', 'restore' => \core\event\base::NOT_MAPPED];
+        return ['db' => 'local_aiquestiongen_job', 'restore' => \core\event\base::NOT_MAPPED];
     }
 
     #[\Override]

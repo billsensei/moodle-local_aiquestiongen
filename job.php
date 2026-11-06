@@ -26,8 +26,8 @@ require_once(__DIR__ . '/../../config.php');
 
 $jobid = required_param('id', PARAM_INT);
 
-$job = $DB->get_record('local_aiqg_job', ['id' => $jobid], '*', MUST_EXIST);
-$source = $DB->get_record('local_aiqg_source', ['id' => $job->sourceid], '*', MUST_EXIST);
+$job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid], '*', MUST_EXIST);
+$source = $DB->get_record('local_aiquestiongen_source', ['id' => $job->sourceid], '*', MUST_EXIST);
 $course = get_course($source->courseid);
 require_login($course);
 $context = context_course::instance($course->id);
@@ -75,7 +75,7 @@ if ($job->status === 'failed') {
 }
 
 if ($job->status === 'done') {
-    $records = $DB->get_records('local_aiqg_item', ['jobid' => $job->id], 'id ASC');
+    $records = $DB->get_records('local_aiquestiongen_item', ['jobid' => $job->id], 'id ASC');
 
     $groups = [];
     $exported = [];

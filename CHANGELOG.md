@@ -13,6 +13,22 @@
 - The API key test now loads `adminlib.php` itself; before Moodle 5.3 the admin setting classes are not autoloaded.
   Test only; the plugin code needed no change.
 
+## [0.8.1] - 2026-11-06
+
+### Changed
+- The three database tables are renamed from `local_aiqg_source`, `local_aiqg_job` and `local_aiqg_item` to
+  `local_aiquestiongen_source`, `local_aiquestiongen_job` and `local_aiquestiongen_item`, which is what Moodle's
+  plugin checks expect. The upgrade renames them and keeps all data. Anything outside the plugin that reads the old
+  names (custom reports, for example) must use the new ones.
+
+### Fixed
+- A lint warning in `amd/src/review.js` (inconsistent return in the click handler); the built file is regenerated.
+
+### Added
+- GitHub Actions workflow (`.github/workflows/ci.yml`) running Moodle's plugin checks, PHPUnit and Behat on
+  Moodle 5.0, 5.1, 5.2 and the development branch, on PostgreSQL and MariaDB.
+- `docs/REAL-AI-TEST.md` and `docs/live-test.php.txt`: a checklist and a script for the first run with a real AI.
+
 ## [0.8.0] - 2026-11-06
 
 ### Added

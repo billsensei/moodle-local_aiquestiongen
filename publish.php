@@ -32,8 +32,8 @@ require_once(__DIR__ . '/../../config.php');
 
 $jobid = required_param('id', PARAM_INT);
 
-$job = $DB->get_record('local_aiqg_job', ['id' => $jobid], '*', MUST_EXIST);
-$source = $DB->get_record('local_aiqg_source', ['id' => $job->sourceid], '*', MUST_EXIST);
+$job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid], '*', MUST_EXIST);
+$source = $DB->get_record('local_aiquestiongen_source', ['id' => $job->sourceid], '*', MUST_EXIST);
 $course = get_course($source->courseid);
 require_login($course);
 // Checks the use capability and that the article is the user's own.
@@ -49,7 +49,7 @@ $PAGE->set_pagelayout('incourse');
 $PAGE->set_title(get_string('publishheading', 'local_aiquestiongen'));
 $PAGE->set_heading($course->fullname);
 
-$approved = $DB->count_records('local_aiqg_item', ['jobid' => $job->id, 'status' => 'approved']);
+$approved = $DB->count_records('local_aiquestiongen_item', ['jobid' => $job->id, 'status' => 'approved']);
 $options = bank_finder::get_options($course->id, $USER->id, \core_text::substr(trim($source->title), 0, 255));
 
 // Decide what can be shown before any output, because publishing ends with a redirect.
@@ -65,7 +65,7 @@ $error = null;
 if ($problem === null) {
     // Reading comprehension: true/false statements, and anything the model marked as a comprehension question.
     $hascomprehension = false;
-    foreach ($DB->get_records('local_aiqg_item', ['jobid' => $job->id, 'status' => 'approved']) as $approveditem) {
+    foreach ($DB->get_records('local_aiquestiongen_item', ['jobid' => $job->id, 'status' => 'approved']) as $approveditem) {
         $focus = json_decode($approveditem->payload, true)['focus'] ?? '';
         if ($approveditem->qtype === 'truefalse' || $focus === 'comprehension') {
             $hascomprehension = true;

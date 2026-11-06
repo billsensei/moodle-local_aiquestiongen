@@ -47,12 +47,12 @@ final class publisher_test extends \advanced_testcase {
             'courseid' => $course->id, 'userid' => $teacher->id, 'title' => 'Tom & the "Move"',
             'text' => 'Tom was reluctant to leave.', 'sourcefileitemid' => 0, 'timecreated' => time(),
         ];
-        $source->id = $DB->insert_record('local_aiqg_source', $source);
+        $source->id = $DB->insert_record('local_aiquestiongen_source', $source);
         $job = (object) [
             'sourceid' => $source->id, 'settings' => json_encode(['cefr' => 'B1']), 'status' => 'done',
             'tokensused' => 0, 'timecreated' => time(),
         ];
-        $job->id = $DB->insert_record('local_aiqg_job', $job);
+        $job->id = $DB->insert_record('local_aiquestiongen_job', $job);
 
         $ids = [];
         foreach ($statuses as $i => $status) {
@@ -66,7 +66,7 @@ final class publisher_test extends \advanced_testcase {
                 ],
                 'focus' => 'vocabulary', 'target' => 'reluctant', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
             ];
-            $ids[] = $DB->insert_record('local_aiqg_item', (object) [
+            $ids[] = $DB->insert_record('local_aiquestiongen_item', (object) [
                 'jobid' => $job->id, 'qtype' => 'multichoice', 'status' => $status,
                 'payload' => json_encode($payload), 'timemodified' => 0,
             ]);
@@ -89,11 +89,11 @@ final class publisher_test extends \advanced_testcase {
         $this->assertEquals($s['category']->id, $result['categoryid']);
         $this->assertEquals($s['qbank']->cmid, $result['bankcmid']);
 
-        $item = $DB->get_record('local_aiqg_item', ['id' => $s['ids'][0]]);
+        $item = $DB->get_record('local_aiquestiongen_item', ['id' => $s['ids'][0]]);
         $this->assertSame('published', $item->status);
         $this->assertNotEmpty($item->questionid);
-        $this->assertSame('pending', $DB->get_field('local_aiqg_item', 'status', ['id' => $s['ids'][2]]));
-        $this->assertNull($DB->get_field('local_aiqg_item', 'questionid', ['id' => $s['ids'][2]]));
+        $this->assertSame('pending', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $s['ids'][2]]));
+        $this->assertNull($DB->get_field('local_aiquestiongen_item', 'questionid', ['id' => $s['ids'][2]]));
 
         $question = \question_bank::load_question($item->questionid);
         $this->assertSame('multichoice', $question->qtype->name());
@@ -124,7 +124,7 @@ final class publisher_test extends \advanced_testcase {
 
         publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id);
 
-        $questionid = $DB->get_field('local_aiqg_item', 'questionid', ['id' => $s['ids'][0]]);
+        $questionid = $DB->get_field('local_aiquestiongen_item', 'questionid', ['id' => $s['ids'][0]]);
         $question = $DB->get_record('question', ['id' => $questionid]);
         $this->assertStringContainsString('&lt;b&gt;ok&lt;/b&gt;', $question->questiontext);
         $this->assertStringNotContainsString('<b>', $question->questiontext);
@@ -144,7 +144,7 @@ final class publisher_test extends \advanced_testcase {
 
         publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id);
 
-        $questionid = $DB->get_field('local_aiqg_item', 'questionid', ['id' => $s['ids'][0]]);
+        $questionid = $DB->get_field('local_aiquestiongen_item', 'questionid', ['id' => $s['ids'][0]]);
         $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $questionid);
         $this->assertContains('ai-generated', $tags);
         $this->assertContains('cefr-b1', $tags);
@@ -219,7 +219,7 @@ final class publisher_test extends \advanced_testcase {
                 $this->assertSame('err_badtarget', $e->errorcode);
             }
         }
-        $this->assertSame('approved', $DB->get_field('local_aiqg_item', 'status', ['id' => $s['ids'][0]]));
+        $this->assertSame('approved', $DB->get_field('local_aiquestiongen_item', 'status', ['id' => $s['ids'][0]]));
     }
 
     /**
@@ -309,7 +309,7 @@ final class publisher_test extends \advanced_testcase {
      */
     private function add_other_types(\stdClass $job): array {
         global $DB;
-        $tf = $DB->insert_record('local_aiqg_item', (object) [
+        $tf = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $job->id, 'qtype' => 'truefalse', 'status' => 'approved', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'truefalse', 'stem' => 'Tom said "no" & <b>left</b>.', 'correct' => false,
@@ -317,7 +317,7 @@ final class publisher_test extends \advanced_testcase {
                 'focus' => 'comprehension', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $essay = $DB->insert_record('local_aiqg_item', (object) [
+        $essay = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $job->id, 'qtype' => 'essay', 'status' => 'approved', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'essay', 'stem' => 'Why did <Tom> leave?', 'modelanswer' => "He had to.\nHe was sad & tired.",
@@ -342,7 +342,7 @@ final class publisher_test extends \advanced_testcase {
         $this->assertSame(0, $result['failed']);
 
         // True/false: "False" is the correct answer.
-        $tfq = $DB->get_record('local_aiqg_item', ['id' => $tfid], '*', MUST_EXIST);
+        $tfq = $DB->get_record('local_aiquestiongen_item', ['id' => $tfid], '*', MUST_EXIST);
         $this->assertSame('published', $tfq->status);
         $question = \question_bank::load_question($tfq->questionid);
         $this->assertSame('truefalse', $question->qtype->name());
@@ -355,7 +355,7 @@ final class publisher_test extends \advanced_testcase {
         $this->assertStringContainsString('Right &amp; well done.', $feedback[1]);
 
         // Essay: model answer and marking guide are in the grader information, escaped.
-        $essayq = $DB->get_record('local_aiqg_item', ['id' => $essayid], '*', MUST_EXIST);
+        $essayq = $DB->get_record('local_aiquestiongen_item', ['id' => $essayid], '*', MUST_EXIST);
         $this->assertSame('published', $essayq->status);
         $question = \question_bank::load_question($essayq->questionid);
         $this->assertSame('essay', $question->qtype->name());
@@ -382,7 +382,7 @@ final class publisher_test extends \advanced_testcase {
         $result = publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id);
         $this->assertSame(3, $result['published']);
 
-        $items = $DB->get_records('local_aiqg_item', ['jobid' => $s['job']->id]);
+        $items = $DB->get_records('local_aiquestiongen_item', ['jobid' => $s['job']->id]);
         $this->assertSame(['published'], array_values(array_unique(array_column($items, 'status'))));
         foreach ($items as $item) {
             $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $item->questionid);
@@ -399,7 +399,7 @@ final class publisher_test extends \advanced_testcase {
      */
     private function add_fill_items(\stdClass $job): array {
         global $DB;
-        $typed = $DB->insert_record('local_aiqg_item', (object) [
+        $typed = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $job->id, 'qtype' => 'multianswer', 'status' => 'approved', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'multianswer', 'stem' => 'Is 3 < 5 & Tom ____ "ok"?', 'answer' => 'reluctant',
@@ -407,7 +407,7 @@ final class publisher_test extends \advanced_testcase {
                 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $chosen = $DB->insert_record('local_aiqg_item', (object) [
+        $chosen = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $job->id, 'qtype' => 'gapselect', 'status' => 'approved', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'gapselect', 'stem' => 'Tom <b>was</b> ____ to leave.', 'answer' => 'reluctant',
@@ -426,14 +426,14 @@ final class publisher_test extends \advanced_testcase {
         $this->resetAfterTest();
         $s = $this->make_setup([]);
         [$typedid] = $this->add_fill_items($s['job']);
-        $DB->set_field('local_aiqg_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'gapselect']);
+        $DB->set_field('local_aiquestiongen_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'gapselect']);
         $this->setUser($s['teacher']);
 
         $result = publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id);
         $this->assertSame(1, $result['published']);
         $this->assertSame(0, $result['failed']);
 
-        $item = $DB->get_record('local_aiqg_item', ['id' => $typedid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['id' => $typedid], '*', MUST_EXIST);
         $this->assertSame('published', $item->status);
         $question = $DB->get_record('question', ['id' => $item->questionid], '*', MUST_EXIST);
         $this->assertSame('multianswer', $question->qtype);
@@ -457,13 +457,13 @@ final class publisher_test extends \advanced_testcase {
         $this->resetAfterTest();
         $s = $this->make_setup([]);
         [, $chosenid] = $this->add_fill_items($s['job']);
-        $DB->set_field('local_aiqg_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'multianswer']);
+        $DB->set_field('local_aiquestiongen_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'multianswer']);
         $this->setUser($s['teacher']);
 
         $result = publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id);
         $this->assertSame(1, $result['published']);
 
-        $item = $DB->get_record('local_aiqg_item', ['id' => $chosenid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['id' => $chosenid], '*', MUST_EXIST);
         $this->assertSame('published', $item->status);
         $question = \question_bank::load_question($item->questionid);
         $this->assertSame('gapselect', $question->qtype->name());
@@ -484,8 +484,8 @@ final class publisher_test extends \advanced_testcase {
         $s = $this->make_setup([]);
         // Two true/false statements (comprehension) and a vocabulary multiple-choice question.
         $this->add_other_types($s['job']);
-        $DB->set_field('local_aiqg_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'essay']);
-        $DB->insert_record('local_aiqg_item', (object) [
+        $DB->set_field('local_aiquestiongen_item', 'status', 'pending', ['jobid' => $s['job']->id, 'qtype' => 'essay']);
+        $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $s['job']->id, 'qtype' => 'multichoice', 'status' => 'approved', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'multichoice', 'stem' => 'Vocabulary?', 'focus' => 'vocabulary', 'target' => 'reluctant',
@@ -498,7 +498,7 @@ final class publisher_test extends \advanced_testcase {
         ]);
         $this->setUser($s['teacher']);
         $s['source']->text = "Tom was <reluctant> to leave.\n\nHe had lived there for years.";
-        $DB->set_field('local_aiqg_source', 'text', $s['source']->text, ['id' => $s['source']->id]);
+        $DB->set_field('local_aiquestiongen_source', 'text', $s['source']->text, ['id' => $s['source']->id]);
 
         $result = publisher::publish($s['job'], $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id, true);
         $this->assertSame(2, $result['published']);
@@ -514,14 +514,14 @@ final class publisher_test extends \advanced_testcase {
         $this->assertContains('reading-comprehension', $passagetags);
 
         // Only the true/false statement is tagged as comprehension, not the vocabulary question.
-        foreach ($DB->get_records('local_aiqg_item', ['jobid' => $s['job']->id, 'status' => 'published']) as $item) {
+        foreach ($DB->get_records('local_aiquestiongen_item', ['jobid' => $s['job']->id, 'status' => 'published']) as $item) {
             $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $item->questionid);
             $this->assertSame($item->qtype === 'truefalse', in_array('reading-comprehension', $tags, true), $item->qtype);
         }
 
         // Publishing more later does not add a second passage.
-        $DB->set_field('local_aiqg_item', 'status', 'approved', ['jobid' => $s['job']->id, 'qtype' => 'essay']);
-        $job = $DB->get_record('local_aiqg_job', ['id' => $s['job']->id]);
+        $DB->set_field('local_aiquestiongen_item', 'status', 'approved', ['jobid' => $s['job']->id, 'qtype' => 'essay']);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $s['job']->id]);
         $again = publisher::publish($job, $s['source'], $s['teacher']->id, 'cat:' . $s['category']->id, true);
         $this->assertSame(1, $again['published']);
         $this->assertFalse($again['passage']);

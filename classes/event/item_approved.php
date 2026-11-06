@@ -28,7 +28,7 @@ class item_approved extends \core\event\base {
     protected function init(): void {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
-        $this->data['objecttable'] = 'local_aiqg_item';
+        $this->data['objecttable'] = 'local_aiquestiongen_item';
     }
 
     #[\Override]
@@ -48,7 +48,7 @@ class item_approved extends \core\event\base {
 
     #[\Override]
     public static function get_objectid_mapping(): array {
-        return ['db' => 'local_aiqg_item', 'restore' => \core\event\base::NOT_MAPPED];
+        return ['db' => 'local_aiquestiongen_item', 'restore' => \core\event\base::NOT_MAPPED];
     }
 
     #[\Override]

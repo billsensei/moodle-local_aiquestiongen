@@ -29,7 +29,7 @@ class job_manager {
     /**
      * Create a job for a source article and queue it to run in the background.
      *
-     * @param \stdClass $source The local_aiqg_source record.
+     * @param \stdClass $source The local_aiquestiongen_source record.
      * @param int $userid The user starting the job.
      * @param array $settings Requested settings: cefr, target, language and one count per question type (see qtypes::COUNT_KEYS).
      * @return int The new job id.
@@ -68,7 +68,7 @@ class job_manager {
             $clean[$key] = $counts[$qtype];
         }
 
-        $jobid = $DB->insert_record('local_aiqg_job', (object) [
+        $jobid = $DB->insert_record('local_aiquestiongen_job', (object) [
             'sourceid' => $source->id,
             'settings' => json_encode($clean, JSON_UNESCAPED_UNICODE),
             'status' => 'queued',
@@ -108,8 +108,8 @@ class job_manager {
 
         return $DB->count_records_sql(
             "SELECT COUNT(j.id)
-               FROM {local_aiqg_job} j
-               JOIN {local_aiqg_source} s ON s.id = j.sourceid
+               FROM {local_aiquestiongen_job} j
+               JOIN {local_aiquestiongen_source} s ON s.id = j.sourceid
               WHERE s.userid = :userid AND j.timecreated >= :since",
             ['userid' => $userid, 'since' => usergetmidnight(time())]
         );

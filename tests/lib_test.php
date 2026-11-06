@@ -43,7 +43,7 @@ final class lib_test extends \advanced_testcase {
         $other = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
         $sink->close();
 
-        $sourceid = $DB->insert_record('local_aiqg_source', (object) [
+        $sourceid = $DB->insert_record('local_aiquestiongen_source', (object) [
             'courseid' => $course->id,
             'userid' => $owner->id,
             'title' => 'Private article',

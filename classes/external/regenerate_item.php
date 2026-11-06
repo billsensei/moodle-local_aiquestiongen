@@ -64,7 +64,7 @@ class regenerate_item extends external_api {
         if (!get_config('local_aiquestiongen', 'enabled')) {
             throw new \moodle_exception('disabled', 'local_aiquestiongen');
         }
-        $job = $DB->get_record('local_aiqg_job', ['id' => $item->jobid], '*', MUST_EXIST);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $item->jobid], '*', MUST_EXIST);
 
         $regenerator = new regenerator(client_factory::create($context, $USER->id));
         return item_presenter::export($regenerator->regenerate($item, $job, $source, $comment, (int) $USER->id));

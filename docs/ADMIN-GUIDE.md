@@ -1,6 +1,6 @@
 # AI Question Generator: administrator guide
 
-Plugin: `local_aiquestiongen`. Version 0.8.0. Moodle 5.0 or later. Tested on 5.0, 5.1, 5.2 and 5.3 (see "What has and has not been tested").
+Plugin: `local_aiquestiongen`. Version 0.8.1. Moodle 5.0 or later. Tested on 5.0, 5.1, 5.2 and 5.3 (see "What has and has not been tested").
 
 ## What it does
 

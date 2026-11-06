@@ -41,7 +41,7 @@ class item_service {
     public static function load_item(int $itemid, int $userid): array {
         global $DB;
 
-        $item = $DB->get_record('local_aiqg_item', ['id' => $itemid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['id' => $itemid], '*', MUST_EXIST);
         [$job, $source, $context] = self::load_job($item->jobid, $userid);
         return [$item, $source, $context];
     }
@@ -56,8 +56,8 @@ class item_service {
     public static function load_job(int $jobid, int $userid): array {
         global $DB;
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid], '*', MUST_EXIST);
-        $source = $DB->get_record('local_aiqg_source', ['id' => $job->sourceid], '*', MUST_EXIST);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid], '*', MUST_EXIST);
+        $source = $DB->get_record('local_aiquestiongen_source', ['id' => $job->sourceid], '*', MUST_EXIST);
         $context = \context_course::instance($source->courseid);
 
         require_capability('local/aiquestiongen:use', $context, $userid);
@@ -146,7 +146,7 @@ class item_service {
         $item->payload = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $item->status = $item->status === 'approved' ? 'pending' : $item->status;
         $item->timemodified = time();
-        $DB->update_record('local_aiqg_item', $item);
+        $DB->update_record('local_aiquestiongen_item', $item);
         return $item;
     }
 
@@ -180,7 +180,7 @@ class item_service {
         $wasapproved = $item->status === 'approved';
         $item->status = $status;
         $item->timemodified = time();
-        $DB->update_record('local_aiqg_item', $item);
+        $DB->update_record('local_aiquestiongen_item', $item);
 
         if ($status === 'approved' && !$wasapproved) {
             item_approved::create([
@@ -218,7 +218,7 @@ class item_service {
         }
 
         $pending = $DB->get_records(
-            'local_aiqg_item',
+            'local_aiquestiongen_item',
             ['jobid' => $job->id, 'qtype' => $qtype, 'status' => 'pending'],
             'id ASC'
         );

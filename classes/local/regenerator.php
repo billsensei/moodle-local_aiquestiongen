@@ -115,7 +115,7 @@ class regenerator {
         }
 
         if ($tokens > 0) {
-            $DB->set_field('local_aiqg_job', 'tokensused', (int) $job->tokensused + $tokens, ['id' => $job->id]);
+            $DB->set_field('local_aiquestiongen_job', 'tokensused', (int) $job->tokensused + $tokens, ['id' => $job->id]);
         }
         if ($new === null) {
             throw new \moodle_exception('err_regenfailed', 'local_aiquestiongen');
@@ -128,7 +128,7 @@ class regenerator {
         $item->payload = json_encode($new, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $item->status = 'pending';
         $item->timemodified = time();
-        $DB->update_record('local_aiqg_item', $item);
+        $DB->update_record('local_aiquestiongen_item', $item);
         return $item;
     }
 }

@@ -3,7 +3,7 @@
 Teachers upload or paste an article; AI drafts EFL questions from it; nothing reaches the
 question bank until the teacher approves it. Targets Moodle 5.0 or later.
 
-**Status: version 0.8.0, feature complete, tested on Moodle 5.0, 5.1, 5.2 and 5.3 with a stubbed AI.**
+**Status: version 0.8.1, feature complete, tested on Moodle 5.0, 5.1, 5.2 and 5.3 with a stubbed AI.**
 Not yet tried with a real AI provider.
 
 Features: article upload (.txt, .docx, .pdf, .html) or paste; five question types (multiple choice,

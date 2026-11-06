@@ -38,11 +38,11 @@ final class review_external_test extends \advanced_testcase {
         $gen = $this->getDataGenerator();
         $course = $gen->create_course();
         $teacher = $gen->create_and_enrol($course, 'editingteacher');
-        $sourceid = $DB->insert_record('local_aiqg_source', (object) [
+        $sourceid = $DB->insert_record('local_aiquestiongen_source', (object) [
             'courseid' => $course->id, 'userid' => $teacher->id, 'title' => 'T',
             'text' => 'Tom was reluctant to leave.', 'sourcefileitemid' => 0, 'timecreated' => time(),
         ]);
-        $jobid = $DB->insert_record('local_aiqg_job', (object) [
+        $jobid = $DB->insert_record('local_aiquestiongen_job', (object) [
             'sourceid' => $sourceid, 'settings' => '{}', 'status' => 'done', 'tokensused' => 0, 'timecreated' => time(),
         ]);
         $payload = json_encode([
@@ -57,7 +57,7 @@ final class review_external_test extends \advanced_testcase {
         ]);
         $ids = [];
         foreach ([1, 2] as $unused) {
-            $ids[] = $DB->insert_record('local_aiqg_item', (object) [
+            $ids[] = $DB->insert_record('local_aiquestiongen_item', (object) [
                 'jobid' => $jobid, 'qtype' => 'multichoice', 'status' => 'pending', 'payload' => $payload, 'timemodified' => 0,
             ]);
         }
@@ -156,14 +156,14 @@ final class review_external_test extends \advanced_testcase {
         [$teacher, , $jobid] = $this->setup_job();
         $this->setUser($teacher);
 
-        $tfid = $DB->insert_record('local_aiqg_item', (object) [
+        $tfid = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'truefalse', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'truefalse', 'stem' => 'Tom stayed.', 'correct' => false, 'feedbacktrue' => '',
                 'feedbackfalse' => '', 'focus' => 'comprehension', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $essayid = $DB->insert_record('local_aiqg_item', (object) [
+        $essayid = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'essay', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'essay', 'stem' => 'Why?', 'modelanswer' => 'Because.', 'rubric' => 'A reason.',
@@ -197,14 +197,14 @@ final class review_external_test extends \advanced_testcase {
         [$teacher, , $jobid] = $this->setup_job();
         $this->setUser($teacher);
 
-        $typed = $DB->insert_record('local_aiqg_item', (object) [
+        $typed = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'multianswer', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'multianswer', 'stem' => 'Tom was ____ to leave.', 'answer' => 'reluctant', 'alternatives' => [],
                 'focus' => 'vocabulary', 'target' => 'reluctant', 'cefr' => 'B1', 'flagged' => false, 'issues' => [],
             ]),
         ]);
-        $chosen = $DB->insert_record('local_aiqg_item', (object) [
+        $chosen = $DB->insert_record('local_aiquestiongen_item', (object) [
             'jobid' => $jobid, 'qtype' => 'gapselect', 'status' => 'pending', 'timemodified' => 0,
             'payload' => json_encode([
                 'type' => 'gapselect', 'stem' => 'Tom was ____ to leave.', 'answer' => 'reluctant',
@@ -259,7 +259,7 @@ final class review_external_test extends \advanced_testcase {
         $this->resetAfterTest();
         [$teacher, , , $ids] = $this->setup_job();
         $this->setUser($teacher);
-        $before = $DB->get_field('local_aiqg_item', 'payload', ['id' => $ids[0]]);
+        $before = $DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $ids[0]]);
 
         try {
             regenerate_item::execute($ids[0], 'easier');
@@ -267,7 +267,7 @@ final class review_external_test extends \advanced_testcase {
         } catch (\moodle_exception $e) {
             $this->assertSame('err_aifailed', $e->errorcode);
         }
-        $this->assertSame($before, $DB->get_field('local_aiqg_item', 'payload', ['id' => $ids[0]]));
+        $this->assertSame($before, $DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $ids[0]]));
     }
 
     /**

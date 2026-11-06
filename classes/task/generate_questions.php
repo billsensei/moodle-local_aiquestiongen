@@ -37,7 +37,7 @@ class generate_questions extends \core\task\adhoc_task {
         global $DB;
 
         $jobid = (int) ($this->get_custom_data()->jobid ?? 0);
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         // The job may have been deleted, or already handled by an earlier run of this task.
         if (!$job || $job->status !== 'queued') {
             return;
@@ -45,7 +45,7 @@ class generate_questions extends \core\task\adhoc_task {
 
         // An administrator may switch the plugin off while jobs are waiting; no AI request may be made then.
         if (!get_config('local_aiquestiongen', 'enabled')) {
-            $DB->update_record('local_aiqg_job', (object) [
+            $DB->update_record('local_aiquestiongen_job', (object) [
                 'id' => $job->id,
                 'status' => 'failed',
                 'error' => get_string('disabled', 'local_aiquestiongen'),
@@ -53,7 +53,7 @@ class generate_questions extends \core\task\adhoc_task {
             return;
         }
 
-        $source = $DB->get_record('local_aiqg_source', ['id' => $job->sourceid], '*', MUST_EXIST);
+        $source = $DB->get_record('local_aiquestiongen_source', ['id' => $job->sourceid], '*', MUST_EXIST);
         $context = \context_course::instance($source->courseid);
 
         $generator = new generator(client_factory::create($context, (int) $source->userid));

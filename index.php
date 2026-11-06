@@ -88,7 +88,7 @@ if ($data = $form->get_data()) {
             'sourcefileitemid' => 0,
             'timecreated' => time(),
         ];
-        $record->id = $DB->insert_record('local_aiqg_source', $record);
+        $record->id = $DB->insert_record('local_aiquestiongen_source', $record);
 
         if ($draftfile) {
             file_save_draft_area_files(
@@ -99,7 +99,7 @@ if ($data = $form->get_data()) {
                 $record->id,
                 ['subdirs' => 0, 'maxfiles' => 1]
             );
-            $DB->set_field('local_aiqg_source', 'sourcefileitemid', $record->id, ['id' => $record->id]);
+            $DB->set_field('local_aiquestiongen_source', 'sourcefileitemid', $record->id, ['id' => $record->id]);
         }
 
         redirect(

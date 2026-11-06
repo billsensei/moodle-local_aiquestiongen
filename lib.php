@@ -76,7 +76,7 @@ function local_aiquestiongen_pluginfile($course, $cm, $context, $filearea, $args
     global $DB, $USER;
     $itemid = (int) array_shift($args);
     $conditions = ['id' => $itemid, 'courseid' => $context->instanceid, 'userid' => $USER->id];
-    if (!$DB->record_exists('local_aiqg_source', $conditions)) {
+    if (!$DB->record_exists('local_aiquestiongen_source', $conditions)) {
         return false;
     }
     $filename = array_pop($args);

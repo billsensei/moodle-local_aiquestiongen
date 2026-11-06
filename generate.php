@@ -30,7 +30,7 @@ require_once(__DIR__ . '/../../config.php');
 
 $sourceid = required_param('sourceid', PARAM_INT);
 
-$source = $DB->get_record('local_aiqg_source', ['id' => $sourceid], '*', MUST_EXIST);
+$source = $DB->get_record('local_aiquestiongen_source', ['id' => $sourceid], '*', MUST_EXIST);
 $course = get_course($source->courseid);
 require_login($course);
 $context = context_course::instance($course->id);

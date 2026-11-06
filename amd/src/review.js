@@ -167,7 +167,8 @@ export const init = (jobId) => {
 
     const handle = async(action, button, card) => {
         if (action === 'approve-all' || action === 'reject-all') {
-            return bulk(action, button.dataset.qtype);
+            await bulk(action, button.dataset.qtype);
+            return;
         }
         const itemId = parseInt(card.dataset.itemid, 10);
         const number = parseInt(card.dataset.number, 10);

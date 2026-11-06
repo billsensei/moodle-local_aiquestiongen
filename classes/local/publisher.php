@@ -61,7 +61,7 @@ class publisher {
             throw new \moodle_exception('err_notowner', 'local_aiquestiongen');
         }
 
-        $approved = $DB->get_records('local_aiqg_item', ['jobid' => $job->id, 'status' => 'approved'], 'id ASC');
+        $approved = $DB->get_records('local_aiquestiongen_item', ['jobid' => $job->id, 'status' => 'approved'], 'id ASC');
         if (!$approved) {
             throw new \moodle_exception('err_nothingapproved', 'local_aiquestiongen');
         }
@@ -83,7 +83,7 @@ class publisher {
 
         $questionids = [];
         if ($passage || ($includepassage && !empty($settings['passagequestionid']))) {
-            $saved = json_decode((string) $DB->get_field('local_aiqg_job', 'settings', ['id' => $job->id]), true) ?: [];
+            $saved = json_decode((string) $DB->get_field('local_aiquestiongen_job', 'settings', ['id' => $job->id]), true) ?: [];
             if (!empty($saved['passagequestionid'])) {
                 $questionids[] = (int) $saved['passagequestionid'];
             }
@@ -101,7 +101,7 @@ class publisher {
                     $itemtags[] = self::COMPREHENSION_TAG;
                 }
                 \core_tag_tag::set_item_tags('core_question', 'question', $question->id, $bankcontext, $itemtags);
-                $DB->update_record('local_aiqg_item', (object) [
+                $DB->update_record('local_aiquestiongen_item', (object) [
                     'id' => $item->id,
                     'status' => 'published',
                     'questionid' => $question->id,
@@ -462,7 +462,7 @@ class publisher {
             array_merge($tags, [self::COMPREHENSION_TAG])
         );
         $settings['passagequestionid'] = (int) $saved->id;
-        $DB->set_field('local_aiqg_job', 'settings', json_encode($settings, JSON_UNESCAPED_UNICODE), ['id' => $job->id]);
+        $DB->set_field('local_aiquestiongen_job', 'settings', json_encode($settings, JSON_UNESCAPED_UNICODE), ['id' => $job->id]);
         $transaction->allow_commit();
         return true;
     }

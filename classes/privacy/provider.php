@@ -44,33 +44,33 @@ class provider implements
      * @return collection The updated collection.
      */
     public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table('local_aiqg_source', [
-            'courseid' => 'privacy:metadata:local_aiqg_source:courseid',
-            'userid' => 'privacy:metadata:local_aiqg_source:userid',
-            'title' => 'privacy:metadata:local_aiqg_source:title',
-            'text' => 'privacy:metadata:local_aiqg_source:text',
-            'sourcefileitemid' => 'privacy:metadata:local_aiqg_source:sourcefileitemid',
-            'timecreated' => 'privacy:metadata:local_aiqg_source:timecreated',
-        ], 'privacy:metadata:local_aiqg_source');
+        $collection->add_database_table('local_aiquestiongen_source', [
+            'courseid' => 'privacy:metadata:local_aiquestiongen_source:courseid',
+            'userid' => 'privacy:metadata:local_aiquestiongen_source:userid',
+            'title' => 'privacy:metadata:local_aiquestiongen_source:title',
+            'text' => 'privacy:metadata:local_aiquestiongen_source:text',
+            'sourcefileitemid' => 'privacy:metadata:local_aiquestiongen_source:sourcefileitemid',
+            'timecreated' => 'privacy:metadata:local_aiquestiongen_source:timecreated',
+        ], 'privacy:metadata:local_aiquestiongen_source');
 
-        $collection->add_database_table('local_aiqg_job', [
-            'sourceid' => 'privacy:metadata:local_aiqg_job:sourceid',
-            'settings' => 'privacy:metadata:local_aiqg_job:settings',
-            'status' => 'privacy:metadata:local_aiqg_job:status',
-            'error' => 'privacy:metadata:local_aiqg_job:error',
-            'provider' => 'privacy:metadata:local_aiqg_job:provider',
-            'tokensused' => 'privacy:metadata:local_aiqg_job:tokensused',
-            'timecreated' => 'privacy:metadata:local_aiqg_job:timecreated',
-        ], 'privacy:metadata:local_aiqg_job');
+        $collection->add_database_table('local_aiquestiongen_job', [
+            'sourceid' => 'privacy:metadata:local_aiquestiongen_job:sourceid',
+            'settings' => 'privacy:metadata:local_aiquestiongen_job:settings',
+            'status' => 'privacy:metadata:local_aiquestiongen_job:status',
+            'error' => 'privacy:metadata:local_aiquestiongen_job:error',
+            'provider' => 'privacy:metadata:local_aiquestiongen_job:provider',
+            'tokensused' => 'privacy:metadata:local_aiquestiongen_job:tokensused',
+            'timecreated' => 'privacy:metadata:local_aiquestiongen_job:timecreated',
+        ], 'privacy:metadata:local_aiquestiongen_job');
 
-        $collection->add_database_table('local_aiqg_item', [
-            'jobid' => 'privacy:metadata:local_aiqg_item:jobid',
-            'qtype' => 'privacy:metadata:local_aiqg_item:qtype',
-            'payload' => 'privacy:metadata:local_aiqg_item:payload',
-            'status' => 'privacy:metadata:local_aiqg_item:status',
-            'questionid' => 'privacy:metadata:local_aiqg_item:questionid',
-            'timemodified' => 'privacy:metadata:local_aiqg_item:timemodified',
-        ], 'privacy:metadata:local_aiqg_item');
+        $collection->add_database_table('local_aiquestiongen_item', [
+            'jobid' => 'privacy:metadata:local_aiquestiongen_item:jobid',
+            'qtype' => 'privacy:metadata:local_aiquestiongen_item:qtype',
+            'payload' => 'privacy:metadata:local_aiquestiongen_item:payload',
+            'status' => 'privacy:metadata:local_aiquestiongen_item:status',
+            'questionid' => 'privacy:metadata:local_aiquestiongen_item:questionid',
+            'timemodified' => 'privacy:metadata:local_aiquestiongen_item:timemodified',
+        ], 'privacy:metadata:local_aiquestiongen_item');
 
         $collection->add_subsystem_link('core_files', [], 'privacy:metadata:core_files');
 
@@ -93,7 +93,7 @@ class provider implements
         $contextlist = new contextlist();
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-                  JOIN {local_aiqg_source} s ON s.courseid = ctx.instanceid
+                  JOIN {local_aiquestiongen_source} s ON s.courseid = ctx.instanceid
                  WHERE ctx.contextlevel = :contextlevel AND s.userid = :userid";
         $contextlist->add_from_sql($sql, ['contextlevel' => CONTEXT_COURSE, 'userid' => $userid]);
         return $contextlist;
@@ -109,7 +109,7 @@ class provider implements
         if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
-        $sql = "SELECT s.userid FROM {local_aiqg_source} s WHERE s.courseid = :courseid";
+        $sql = "SELECT s.userid FROM {local_aiquestiongen_source} s WHERE s.courseid = :courseid";
         $userlist->add_from_sql('userid', $sql, ['courseid' => $context->instanceid]);
     }
 
@@ -130,12 +130,12 @@ class provider implements
             if ($context->contextlevel != CONTEXT_COURSE) {
                 continue;
             }
-            $sources = $DB->get_records('local_aiqg_source', ['courseid' => $context->instanceid, 'userid' => $userid]);
+            $sources = $DB->get_records('local_aiquestiongen_source', ['courseid' => $context->instanceid, 'userid' => $userid]);
             foreach ($sources as $source) {
                 $jobs = [];
-                foreach ($DB->get_records('local_aiqg_job', ['sourceid' => $source->id]) as $job) {
+                foreach ($DB->get_records('local_aiquestiongen_job', ['sourceid' => $source->id]) as $job) {
                     $items = [];
-                    foreach ($DB->get_records('local_aiqg_item', ['jobid' => $job->id]) as $item) {
+                    foreach ($DB->get_records('local_aiquestiongen_item', ['jobid' => $job->id]) as $item) {
                         $items[] = (object) [
                             'qtype' => $item->qtype,
                             'payload' => $item->payload,
@@ -186,7 +186,7 @@ class provider implements
         if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
-        $sourceids = $DB->get_fieldset_select('local_aiqg_source', 'id', 'courseid = :courseid', [
+        $sourceids = $DB->get_fieldset_select('local_aiquestiongen_source', 'id', 'courseid = :courseid', [
             'courseid' => $context->instanceid,
         ]);
         self::delete_sources($context, $sourceids);
@@ -206,7 +206,7 @@ class provider implements
                 continue;
             }
             $sourceids = $DB->get_fieldset_select(
-                'local_aiqg_source',
+                'local_aiquestiongen_source',
                 'id',
                 'courseid = :courseid AND userid = :userid',
                 ['courseid' => $context->instanceid, 'userid' => $userid]
@@ -230,7 +230,8 @@ class provider implements
         }
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params['courseid'] = $context->instanceid;
-        $sourceids = $DB->get_fieldset_select('local_aiqg_source', 'id', "courseid = :courseid AND userid $insql", $params);
+        $select = "courseid = :courseid AND userid $insql";
+        $sourceids = $DB->get_fieldset_select('local_aiquestiongen_source', 'id', $select, $params);
         self::delete_sources($context, $sourceids);
     }
 
@@ -248,15 +249,15 @@ class provider implements
         }
         $fs = get_file_storage();
         [$sourcesql, $sourceparams] = $DB->get_in_or_equal($sourceids, SQL_PARAMS_NAMED);
-        $jobids = $DB->get_fieldset_select('local_aiqg_job', 'id', "sourceid $sourcesql", $sourceparams);
+        $jobids = $DB->get_fieldset_select('local_aiquestiongen_job', 'id', "sourceid $sourcesql", $sourceparams);
         if (!empty($jobids)) {
             [$jobsql, $jobparams] = $DB->get_in_or_equal($jobids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('local_aiqg_item', "jobid $jobsql", $jobparams);
-            $DB->delete_records_select('local_aiqg_job', "id $jobsql", $jobparams);
+            $DB->delete_records_select('local_aiquestiongen_item', "jobid $jobsql", $jobparams);
+            $DB->delete_records_select('local_aiquestiongen_job', "id $jobsql", $jobparams);
         }
         foreach ($sourceids as $sourceid) {
             $fs->delete_area_files($context->id, 'local_aiquestiongen', 'source', $sourceid);
         }
-        $DB->delete_records_select('local_aiqg_source', "id $sourcesql", $sourceparams);
+        $DB->delete_records_select('local_aiquestiongen_source', "id $sourcesql", $sourceparams);
     }
 }

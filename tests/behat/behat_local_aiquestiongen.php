@@ -64,7 +64,7 @@ class behat_local_aiquestiongen extends behat_base {
                 $course = $DB->get_record('course', ['fullname' => $identifier], '*', MUST_EXIST);
                 return new moodle_url('/local/aiquestiongen/index.php', ['id' => $course->id]);
             case 'generate':
-                $source = $DB->get_record('local_aiqg_source', ['title' => $identifier], '*', MUST_EXIST);
+                $source = $DB->get_record('local_aiquestiongen_source', ['title' => $identifier], '*', MUST_EXIST);
                 return new moodle_url('/local/aiquestiongen/generate.php', ['sourceid' => $source->id]);
             case 'review':
                 return new moodle_url('/local/aiquestiongen/job.php', ['id' => $this->latest_job($identifier)]);
@@ -82,8 +82,8 @@ class behat_local_aiquestiongen extends behat_base {
      */
     private function latest_job(string $title): int {
         global $DB;
-        $source = $DB->get_record('local_aiqg_source', ['title' => $title], '*', MUST_EXIST);
-        $jobs = $DB->get_records('local_aiqg_job', ['sourceid' => $source->id], 'id DESC', 'id', 0, 1);
+        $source = $DB->get_record('local_aiquestiongen_source', ['title' => $title], '*', MUST_EXIST);
+        $jobs = $DB->get_records('local_aiquestiongen_job', ['sourceid' => $source->id], 'id DESC', 'id', 0, 1);
         return (int) reset($jobs)->id;
     }
 

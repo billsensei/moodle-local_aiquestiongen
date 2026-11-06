@@ -100,11 +100,11 @@ final class generator_test extends \advanced_testcase {
         global $DB;
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $sourceid = $DB->insert_record('local_aiqg_source', (object) [
+        $sourceid = $DB->insert_record('local_aiquestiongen_source', (object) [
             'courseid' => $course->id, 'userid' => $user->id, 'title' => 'T',
             'text' => self::TEXT, 'sourcefileitemid' => 0, 'timecreated' => time(),
         ]);
-        return $DB->insert_record('local_aiqg_job', (object) [
+        return $DB->insert_record('local_aiquestiongen_job', (object) [
             'sourceid' => $sourceid,
             'settings' => json_encode(['cefr' => 'B1', 'count' => $count, 'target' => '', 'language' => 'English']),
             'status' => 'queued', 'tokensused' => 0, 'timecreated' => time(),
@@ -122,12 +122,12 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([self::question('One?'), self::question('Two?')])]);
         (new generator($client))->run($jobid);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('done', $job->status);
         $this->assertSame('fake-model', $job->provider);
         $this->assertEquals(10, $job->tokensused);
 
-        $items = $DB->get_records('local_aiqg_item', ['jobid' => $jobid], 'id');
+        $items = $DB->get_records('local_aiquestiongen_item', ['jobid' => $jobid], 'id');
         $this->assertCount(2, $items);
         foreach ($items as $item) {
             $this->assertSame('pending', $item->status);
@@ -150,7 +150,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([self::question('One?'), self::question('Two?')])]);
         (new generator($client))->run($jobid);
 
-        $this->assertEquals(1, $DB->count_records('local_aiqg_item', ['jobid' => $jobid]));
+        $this->assertEquals(1, $DB->count_records('local_aiquestiongen_item', ['jobid' => $jobid]));
     }
 
     /**
@@ -166,7 +166,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([$broken]), json_encode([self::question('Fixed?')])]);
         (new generator($client))->run($jobid);
 
-        $item = $DB->get_record('local_aiqg_item', ['jobid' => $jobid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['jobid' => $jobid], '*', MUST_EXIST);
         $payload = json_decode($item->payload, true);
         $this->assertSame('Fixed?', $payload['stem']);
         $this->assertFalse($payload['flagged']);
@@ -188,8 +188,8 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([$broken]), json_encode([$broken])]);
         (new generator($client))->run($jobid);
 
-        $this->assertSame('done', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
-        $item = $DB->get_record('local_aiqg_item', ['jobid' => $jobid], '*', MUST_EXIST);
+        $this->assertSame('done', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
+        $item = $DB->get_record('local_aiquestiongen_item', ['jobid' => $jobid], '*', MUST_EXIST);
         $payload = json_decode($item->payload, true);
         $this->assertSame('Broken?', $payload['stem']);
         $this->assertTrue($payload['flagged']);
@@ -209,7 +209,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([$broken]), new ai_exception('boom')]);
         (new generator($client))->run($jobid);
 
-        $item = $DB->get_record('local_aiqg_item', ['jobid' => $jobid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['jobid' => $jobid], '*', MUST_EXIST);
         $this->assertTrue(json_decode($item->payload, true)['flagged']);
     }
 
@@ -224,10 +224,10 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake(['Sorry, I cannot.', 'Still no.']);
         (new generator($client))->run($jobid);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('failed', $job->status);
         $this->assertSame(get_string('err_unparseable', 'local_aiquestiongen'), $job->error);
-        $this->assertEquals(0, $DB->count_records('local_aiqg_item', ['jobid' => $jobid]));
+        $this->assertEquals(0, $DB->count_records('local_aiquestiongen_item', ['jobid' => $jobid]));
     }
 
     /**
@@ -241,7 +241,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake(['nope', json_encode([self::question()])]);
         (new generator($client))->run($jobid);
 
-        $this->assertSame('done', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
+        $this->assertSame('done', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
     }
 
     /**
@@ -254,7 +254,7 @@ final class generator_test extends \advanced_testcase {
 
         (new generator($this->fake([new ai_exception('quota exceeded')])))->run($jobid);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('failed', $job->status);
         $this->assertStringContainsString('quota exceeded', $job->error);
     }
@@ -269,7 +269,7 @@ final class generator_test extends \advanced_testcase {
 
         (new generator($this->fake([new \RuntimeException('secret internals')])))->run($jobid);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('failed', $job->status);
         $this->assertStringNotContainsString('secret', $job->error);
         $this->assertDebuggingCalled();
@@ -326,11 +326,11 @@ final class generator_test extends \advanced_testcase {
         global $DB;
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $sourceid = $DB->insert_record('local_aiqg_source', (object) [
+        $sourceid = $DB->insert_record('local_aiquestiongen_source', (object) [
             'courseid' => $course->id, 'userid' => $user->id, 'title' => 'T',
             'text' => self::TEXT, 'sourcefileitemid' => 0, 'timecreated' => time(),
         ]);
-        return $DB->insert_record('local_aiqg_job', (object) [
+        return $DB->insert_record('local_aiquestiongen_job', (object) [
             'sourceid' => $sourceid,
             'settings' => json_encode($settings + ['cefr' => 'B1', 'target' => '', 'language' => 'English']),
             'status' => 'queued', 'tokensused' => 0, 'timecreated' => time(),
@@ -352,8 +352,8 @@ final class generator_test extends \advanced_testcase {
         ]);
         (new generator($client))->run($jobid);
 
-        $this->assertSame('done', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
-        $items = array_values($DB->get_records('local_aiqg_item', ['jobid' => $jobid], 'id'));
+        $this->assertSame('done', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
+        $items = array_values($DB->get_records('local_aiquestiongen_item', ['jobid' => $jobid], 'id'));
         $this->assertSame(['multichoice', 'truefalse', 'truefalse', 'essay'], array_column($items, 'qtype'));
         foreach ($items as $item) {
             $this->assertFalse(json_decode($item->payload, true)['flagged']);
@@ -362,7 +362,7 @@ final class generator_test extends \advanced_testcase {
         $this->assertStringContainsString('true/false statements', $client->prompts[1]);
         $this->assertStringContainsString('Write 2 true/false', $client->prompts[1]);
         $this->assertStringContainsString('open-ended questions', $client->prompts[2]);
-        $this->assertEquals(30, $DB->get_field('local_aiqg_job', 'tokensused', ['id' => $jobid]));
+        $this->assertEquals(30, $DB->get_field('local_aiquestiongen_job', 'tokensused', ['id' => $jobid]));
     }
 
     /**
@@ -377,7 +377,7 @@ final class generator_test extends \advanced_testcase {
         (new generator($client))->run($jobid);
 
         $this->assertCount(1, $client->prompts);
-        $items = $DB->get_records('local_aiqg_item', ['jobid' => $jobid]);
+        $items = $DB->get_records('local_aiquestiongen_item', ['jobid' => $jobid]);
         $this->assertSame(['essay'], array_values(array_column($items, 'qtype')));
     }
 
@@ -393,10 +393,10 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([self::question()]), 'junk', 'still junk']);
         (new generator($client))->run($jobid);
 
-        $job = $DB->get_record('local_aiqg_job', ['id' => $jobid]);
+        $job = $DB->get_record('local_aiquestiongen_job', ['id' => $jobid]);
         $this->assertSame('done', $job->status);
         $this->assertSame(get_string('err_unparseable', 'local_aiquestiongen'), $job->error);
-        $this->assertEquals(1, $DB->count_records('local_aiqg_item', ['jobid' => $jobid]));
+        $this->assertEquals(1, $DB->count_records('local_aiquestiongen_item', ['jobid' => $jobid]));
     }
 
     /**
@@ -410,7 +410,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake(['a', 'b', 'c', 'd']);
         (new generator($client))->run($jobid);
 
-        $this->assertSame('failed', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
+        $this->assertSame('failed', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
     }
 
     /**
@@ -428,7 +428,7 @@ final class generator_test extends \advanced_testcase {
 
         $this->assertCount(2, $client->prompts);
         $this->assertStringContainsString('marking guide is missing', $client->prompts[1]);
-        $item = $DB->get_record('local_aiqg_item', ['jobid' => $jobid], '*', MUST_EXIST);
+        $item = $DB->get_record('local_aiquestiongen_item', ['jobid' => $jobid], '*', MUST_EXIST);
         $payload = json_decode($item->payload, true);
         $this->assertTrue($payload['flagged']);
         $this->assertSame(['norubric'], $payload['issues']);
@@ -447,7 +447,7 @@ final class generator_test extends \advanced_testcase {
         $client = $this->fake([json_encode([$bad]), json_encode([self::tf_question('Fixed.')])]);
         (new generator($client))->run($jobid);
 
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['jobid' => $jobid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['jobid' => $jobid]), true);
         $this->assertSame('Fixed.', $payload['stem']);
         $this->assertFalse($payload['flagged']);
     }
@@ -492,8 +492,8 @@ final class generator_test extends \advanced_testcase {
         ]);
         (new generator($client))->run($jobid);
 
-        $this->assertSame('done', $DB->get_field('local_aiqg_job', 'status', ['id' => $jobid]));
-        $items = array_values($DB->get_records('local_aiqg_item', ['jobid' => $jobid], 'id'));
+        $this->assertSame('done', $DB->get_field('local_aiquestiongen_job', 'status', ['id' => $jobid]));
+        $items = array_values($DB->get_records('local_aiquestiongen_item', ['jobid' => $jobid], 'id'));
         $this->assertSame(['multichoice', 'multianswer', 'multianswer', 'gapselect'], array_column($items, 'qtype'));
         $this->assertSame([false], array_values(array_unique(array_map(
             fn($i) => json_decode($i->payload, true)['flagged'],
@@ -517,7 +517,7 @@ final class generator_test extends \advanced_testcase {
 
         $this->assertCount(2, $client->prompts);
         $this->assertStringContainsString('exactly one blank', $client->prompts[1]);
-        $payload = json_decode($DB->get_field('local_aiqg_item', 'payload', ['jobid' => $jobid]), true);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['jobid' => $jobid]), true);
         $this->assertTrue($payload['flagged']);
         $this->assertSame(['noblank'], $payload['issues']);
     }

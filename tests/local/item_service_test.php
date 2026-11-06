@@ -210,6 +210,45 @@ final class item_service_test extends \advanced_testcase {
     }
 
     /**
+     * A field longer than the limit is refused and nothing is saved; a field at the limit is accepted.
+     */
+    public function test_field_length_limit(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$teacher, , , , $ids] = $this->make_job();
+        [$item, $source] = item_service::load_item($ids['good1'], $teacher->id);
+        $before = $DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]);
+        $max = item_service::MAX_FIELD_LENGTH;
+        $answers = [
+            ['text' => 'unwilling', 'correct' => true, 'feedback' => ''],
+            ['text' => 'eager', 'correct' => false, 'feedback' => ''],
+            ['text' => 'angry', 'correct' => false, 'feedback' => ''],
+            ['text' => 'tired', 'correct' => false, 'feedback' => ''],
+        ];
+
+        $toolong = str_repeat('あ', $max + 1);
+        $cases = [
+            [$toolong, $answers],
+            ['Fine?', array_replace_recursive($answers, [1 => ['text' => $toolong]])],
+            ['Fine?', array_replace_recursive($answers, [0 => ['feedback' => $toolong]])],
+        ];
+        foreach ($cases as [$stem, $list]) {
+            try {
+                item_service::update_item($item, $source, $stem, $list);
+                $this->fail('A field of ' . ($max + 1) . ' characters should be refused');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('err_fieldlength', $e->errorcode);
+            }
+        }
+        $this->assertSame($before, $DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]));
+
+        // Exactly at the limit is fine, counting characters and not bytes.
+        item_service::update_item($item, $source, str_repeat('あ', $max), $answers);
+        $payload = json_decode($DB->get_field('local_aiquestiongen_item', 'payload', ['id' => $item->id]), true);
+        $this->assertSame($max, \core_text::strlen($payload['stem']));
+    }
+
+    /**
      * Special characters are stored as typed (they are escaped on output, not on save).
      */
     public function test_special_characters_round_trip(): void {

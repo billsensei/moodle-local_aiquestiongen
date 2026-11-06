@@ -66,6 +66,10 @@ class regenerate_item extends external_api {
         }
         $job = $DB->get_record('local_aiquestiongen_job', ['id' => $item->jobid], '*', MUST_EXIST);
 
+        // The AI request can take up to the configured timeout. Nothing below writes to the session, so release its
+        // lock; otherwise the teacher's other pages would wait for the answer.
+        \core\session\manager::write_close();
+
         $regenerator = new regenerator(client_factory::create($context, $USER->id));
         return item_presenter::export($regenerator->regenerate($item, $job, $source, $comment, (int) $USER->id));
     }

@@ -189,6 +189,9 @@ final class direct_api_client_test extends \advanced_testcase {
             ['directprovider', 'openai'],
             ['directendpoint', 'ftp://example.org'],
             ['directendpoint', 'javascript:alert(1)'],
+            ['directendpoint', 'http://api.example.org/v1'],
+            ['directendpoint', 'http://localhost.example.org/v1'],
+            ['directendpoint', 'https://'],
         ];
         foreach ($bad as [$name, $value]) {
             set_config('directprovider', 'claude', 'local_aiquestiongen');
@@ -202,6 +205,20 @@ final class direct_api_client_test extends \advanced_testcase {
             } catch (ai_exception $e) {
                 $this->assertStringContainsString('not fully set up', $e->getMessage());
             }
+        }
+    }
+
+    /**
+     * The API key is only sent over https, or over http to the same machine.
+     */
+    public function test_secure_endpoint(): void {
+        $good = ['', 'https://api.openai.com/v1', 'http://localhost:11434/v1', 'http://127.0.0.1:8000/v1', 'http://[::1]/v1'];
+        foreach ($good as $ok) {
+            $this->assertTrue(direct_api_client::is_secure_endpoint($ok), $ok);
+        }
+        $bad = ['http://api.example.org', 'http://localhost.example.org', 'ftp://example.org', 'example.org', 'https://'];
+        foreach ($bad as $notok) {
+            $this->assertFalse(direct_api_client::is_secure_endpoint($notok), $notok);
         }
     }
 

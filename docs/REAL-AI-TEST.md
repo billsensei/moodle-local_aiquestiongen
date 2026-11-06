@@ -1,6 +1,6 @@
 # Real AI provider test
 
-Version 0.8.1 has only been tested with a stubbed AI. This checklist runs it once against a real provider.
+Version 0.8.2 has only been tested with a stubbed AI. This checklist runs it once against a real provider.
 Use a **test site**. The test makes real API calls (a few cents with Claude) and creates a course and questions.
 
 ## 1. Set up

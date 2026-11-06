@@ -74,6 +74,26 @@ class direct_api_client implements ai_client {
     }
 
     /**
+     * Whether the endpoint is safe to send the API key to: empty (the default), https, or http to this machine.
+     *
+     * @param string $endpoint The endpoint setting.
+     * @return bool
+     */
+    public static function is_secure_endpoint(string $endpoint): bool {
+        if ($endpoint === '') {
+            return true;
+        }
+        $parts = parse_url($endpoint);
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if ($scheme === 'https') {
+            return !empty($parts['host']);
+        }
+        // Plain http is only for a model running on the same machine, where nothing crosses a network.
+        $host = strtolower(trim((string) ($parts['host'] ?? ''), '[]'));
+        return $scheme === 'http' && in_array($host, ['localhost', '127.0.0.1', '::1'], true);
+    }
+
+    /**
      * Build a client from the plugin settings.
      *
      * @param http_transport|null $transport A transport, or null for Moodle's curl.
@@ -87,9 +107,8 @@ class direct_api_client implements ai_client {
         $apikey = api_key::read();
         $model = trim((string) ($config->directmodel ?? ''));
 
-        $scheme = $endpoint === '' ? 'https' : strtolower((string) parse_url($endpoint, PHP_URL_SCHEME));
         $complete = $apikey !== '' && $model !== ''
-            && in_array($scheme, ['http', 'https'], true)
+            && self::is_secure_endpoint($endpoint)
             && ($provider === self::PROVIDER_CLAUDE || $endpoint !== '');
         if (!$complete) {
             throw new ai_exception(get_string('err_directnotconfigured', 'local_aiquestiongen'));

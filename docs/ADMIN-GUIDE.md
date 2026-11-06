@@ -1,6 +1,6 @@
 # AI Question Generator: administrator guide
 
-Plugin: `local_aiquestiongen`. Version 0.8.1. Moodle 5.0 or later. Tested on 5.0, 5.1, 5.2 and 5.3 (see "What has and has not been tested").
+Plugin: `local_aiquestiongen`. Version 0.8.2. Moodle 5.0 or later. Tested on 5.0, 5.1, 5.2 and 5.3 (see "What has and has not been tested").
 
 ## What it does
 
@@ -83,7 +83,7 @@ Choose this if you need a specific model that core AI does not offer.
 | Setting | Notes |
 |---|---|
 | Direct API type | Anthropic Claude (Messages API), or OpenAI-compatible (chat completions). |
-| Endpoint base URL | Claude: leave empty for `https://api.anthropic.com`. OpenAI-compatible: the base URL up to and including `/v1`, e.g. `https://api.openai.com/v1`. |
+| Endpoint base URL | Claude: leave empty for `https://api.anthropic.com`. OpenAI-compatible: the base URL up to and including `/v1`, e.g. `https://api.openai.com/v1`. Must start with `https://`; `http://` is accepted only for `localhost`, for a model on the same server. |
 | API key | Stored encrypted (Moodle's encryption, sodium). The settings page never shows the saved key; enter a new one to change it. The encryption key is a file in the `secret/key` folder of the site data directory, so **back that folder up with the database**: after a restore without it, the saved key cannot be read and must be entered again. Use a key with a spending limit. |
 | Model | Sent with each request. Default `claude-sonnet-5-5`. |
 | Maximum reply tokens | Default 8000. Raise if long jobs come back cut off. |
@@ -103,7 +103,7 @@ Direct mode bypasses Moodle's AI policy and logging. Requests use Moodle's HTTP 
 |---|---|
 | Job stays on "Waiting to start" | Cron is not running, or the site is in maintenance mode. Run `php admin/cli/adhoc_task.php --execute`. |
 | "The AI provider could not generate text" | Core AI provider not set up or its Generate text action is off, or a provider error. See Site administration > Reports > Logs and the AI reports. |
-| "Direct API mode is selected but not fully set up" | API key or model is empty (or endpoint, for OpenAI-compatible). |
+| "Direct API mode is selected but not fully set up" | API key or model is empty, or the endpoint is missing (OpenAI-compatible) or does not start with `https://`. |
 | "The saved API key could not be read" | The site was moved or restored without its `secret/key` folder. Enter the API key again. |
 | "You have reached the daily limit of N regenerations" | The teacher used their Daily regenerations allowance. It resets at their midnight. Raise the setting if it is too tight. |
 | "The AI service refused the request (HTTP 401/403)" | Wrong key, or the key may not use that model. |

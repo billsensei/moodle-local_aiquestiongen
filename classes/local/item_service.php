@@ -31,6 +31,9 @@ class item_service {
     /** @var string[] Statuses a teacher may set. "published" is only set by publishing. */
     public const SETTABLE = ['pending', 'approved', 'rejected'];
 
+    /** @var int The most characters one edited field (question text, an answer, feedback) may have. */
+    public const MAX_FIELD_LENGTH = 2000;
+
     /**
      * Load a draft and check the user may work on it.
      *
@@ -68,6 +71,32 @@ class item_service {
     }
 
     /**
+     * Refuse an edit with a field longer than a question could reasonably need.
+     *
+     * @param string $stem The question text.
+     * @param array $answers Multiple choice answers.
+     * @param array $extra Type-specific fields.
+     * @throws \moodle_exception If any field is too long.
+     */
+    private static function require_field_lengths(string $stem, array $answers, array $extra): void {
+        $texts = [$stem];
+        foreach ($answers as $answer) {
+            $texts[] = (string) ($answer['text'] ?? '');
+            $texts[] = (string) ($answer['feedback'] ?? '');
+        }
+        foreach ($extra as $value) {
+            if (is_string($value)) {
+                $texts[] = $value;
+            }
+        }
+        foreach ($texts as $text) {
+            if (\core_text::strlen($text) > self::MAX_FIELD_LENGTH) {
+                throw new \moodle_exception('err_fieldlength', 'local_aiquestiongen', '', self::MAX_FIELD_LENGTH);
+            }
+        }
+    }
+
+    /**
      * Save the teacher's edits to a draft.
      *
      * The edit is saved even if it is not valid, so work is never lost; the draft is then flagged.
@@ -94,6 +123,7 @@ class item_service {
         global $DB;
 
         self::require_not_published($item);
+        self::require_field_lengths($stem, $answers, $extra);
 
         $payload = json_decode((string) $item->payload, true) ?: [];
         $payload['stem'] = trim($stem);

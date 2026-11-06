@@ -13,6 +13,17 @@
 - The API key test now loads `adminlib.php` itself; before Moodle 5.3 the admin setting classes are not autoloaded.
   Test only; the plugin code needed no change.
 
+## [0.8.2] - 2026-11-07
+
+### Security
+- Regenerate releases the session lock before it waits for the AI, so the teacher's other pages no longer wait up to
+  the AI timeout.
+- An edited question, answer or feedback is limited to 2000 characters per field (counted as characters, so
+  Japanese is not penalised).
+- The direct API endpoint must start with `https://`, so the API key is never sent unencrypted. `http://` is accepted
+  only for `localhost`, `127.0.0.1` and `::1`, for a model running on the same server. A site that saved another
+  `http://` endpoint gets "Direct API mode is selected but not fully set up" until an administrator changes it.
+
 ## [0.8.1] - 2026-11-06
 
 ### Changed

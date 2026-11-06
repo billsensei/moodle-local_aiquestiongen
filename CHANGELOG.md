@@ -4,6 +4,10 @@
 
 ### Tested
 - Install, upgrade, PHPUnit (162 tests) and Behat (13 scenarios) pass on Moodle 5.0.11, 5.1.8, 5.2.4 and 5.3.
+- The release zip (`local_aiquestiongen_v0.8.0.zip`) installs through Site administration > Plugins > Install
+  plugins on 5.0.11, 5.1.8, 5.2.4 and 5.3 (driven in headless Chromium): the ZIP validates, the plugin is listed as
+  "To be installed", the upgrade succeeds and all three tables are created. Also installed from the same zip with
+  the command-line upgrade, and the 162 PHPUnit tests passed on the installed copy.
 
 ### Fixed
 - The API key test now loads `adminlib.php` itself; before Moodle 5.3 the admin setting classes are not autoloaded.

@@ -1,0 +1,224 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+{{!
+    @template local_aiquestiongen/review_item
+
+    One draft question card on the review page, in display mode or (when editing is true) edit mode.
+
+    Example context (json):
+    {
+        "id": 7,
+        "number": 1,
+        "qtype": "multichoice",
+        "ismc": true,
+        "istf": false,
+        "isessay": false,
+        "correcttrue": false,
+        "correctfalse": false,
+        "feedbacktrue": "",
+        "feedbackfalse": "",
+        "modelanswer": "",
+        "rubric": "",
+        "iscloze": false,
+        "isgap": false,
+        "fillanswer": "",
+        "alternatives": "",
+        "distractors": "",
+        "status": "pending",
+        "ispending": true,
+        "isapproved": false,
+        "isrejected": false,
+        "ispublished": false,
+        "canedit": true,
+        "canregenerate": true,
+        "regenerating": false,
+        "editing": false,
+        "stem": "What does reluctant mean?",
+        "answers": [
+            {"index": 0, "letter": "A", "text": "unwilling", "correct": true, "feedback": "Yes."},
+            {"index": 1, "letter": "B", "text": "eager", "correct": false, "feedback": "No."}
+        ],
+        "flagged": false,
+        "issues": [],
+        "focus": "vocabulary",
+        "target": "reluctant",
+        "cefr": "B1"
+    }
+}}
+<div class="card mb-3" data-region="item" data-itemid="{{id}}" data-qtype="{{qtype}}" data-number="{{number}}" data-status="{{status}}" data-flagged="{{#flagged}}1{{/flagged}}{{^flagged}}0{{/flagged}}">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h4 class="h6 mb-0">{{number}}. {{^editing}}{{stem}}{{/editing}}{{#editing}}{{#str}} questionnumber, local_aiquestiongen, {{number}} {{/str}}{{/editing}}</h4>
+            <span class="badge {{#ispending}}bg-secondary{{/ispending}}{{#isapproved}}bg-success{{/isapproved}}{{#isrejected}}bg-danger{{/isrejected}}{{#ispublished}}bg-primary{{/ispublished}} text-white ms-2" data-region="status-badge">
+                {{#ispending}}{{#str}} status_pending, local_aiquestiongen {{/str}}{{/ispending}}{{#isapproved}}{{#str}} status_approved, local_aiquestiongen {{/str}}{{/isapproved}}{{#isrejected}}{{#str}} status_rejected, local_aiquestiongen {{/str}}{{/isrejected}}{{#ispublished}}{{#str}} status_published, local_aiquestiongen {{/str}}{{/ispublished}}
+            </span>
+        </div>
+
+        {{#flagged}}
+            <div class="alert alert-warning" role="alert">
+                <strong>{{#str}} needschecking, local_aiquestiongen {{/str}}:</strong>
+                {{#issues}}<span class="d-block">{{.}}</span>{{/issues}}
+            </div>
+        {{/flagged}}
+
+        {{^editing}}
+            {{#istf}}
+                <p class="mb-1"><span class="fw-bold">{{#str}} tfcorrectis, local_aiquestiongen {{/str}}</span>
+                    <span class="badge bg-success text-white">{{#correcttrue}}{{#str}} true, qtype_truefalse {{/str}}{{/correcttrue}}{{#correctfalse}}{{#str}} false, qtype_truefalse {{/str}}{{/correctfalse}}</span></p>
+                {{#feedbacktrue}}<div class="small text-muted"><span class="fw-bold">{{#str}} feedbackiftrue, local_aiquestiongen {{/str}}</span> {{.}}</div>{{/feedbacktrue}}
+                {{#feedbackfalse}}<div class="small text-muted mb-3"><span class="fw-bold">{{#str}} feedbackiffalse, local_aiquestiongen {{/str}}</span> {{.}}</div>{{/feedbackfalse}}
+            {{/istf}}
+            {{#isessay}}
+                <div class="mb-2"><div class="fw-bold">{{#str}} modelanswer, local_aiquestiongen {{/str}}</div><div style="white-space: pre-wrap;">{{modelanswer}}</div></div>
+                <div class="mb-3"><div class="fw-bold">{{#str}} markingguide, local_aiquestiongen {{/str}}</div><div class="small text-muted" style="white-space: pre-wrap;">{{rubric}}</div></div>
+            {{/isessay}}
+            {{#iscloze}}
+                <p class="mb-1"><span class="fw-bold">{{#str}} blankanswer, local_aiquestiongen {{/str}}</span>
+                    <span class="badge bg-success text-white">{{fillanswer}}</span></p>
+                {{#alternatives}}<div class="small mb-3"><span class="fw-bold">{{#str}} alsoaccepted, local_aiquestiongen {{/str}}</span><div style="white-space: pre-line;">{{.}}</div></div>{{/alternatives}}
+            {{/iscloze}}
+            {{#isgap}}
+                <p class="mb-1"><span class="fw-bold">{{#str}} blankanswer, local_aiquestiongen {{/str}}</span>
+                    <span class="badge bg-success text-white">{{fillanswer}}</span></p>
+                <div class="small mb-3"><span class="fw-bold">{{#str}} wrongchoices, local_aiquestiongen {{/str}}</span><div style="white-space: pre-line;">{{distractors}}</div></div>
+            {{/isgap}}
+            {{#ismc}}
+            <ul class="list-unstyled mb-3">
+                {{#answers}}
+                    <li class="mb-1">
+                        <span class="fw-bold">{{letter}}.</span>
+                        {{#correct}}<strong>{{text}}</strong> <span class="badge bg-success text-white">{{#str}} correctanswer, local_aiquestiongen {{/str}}</span>{{/correct}}
+                        {{^correct}}{{text}}{{/correct}}
+                        {{#feedback}}<div class="small text-muted ms-3">{{.}}</div>{{/feedback}}
+                    </li>
+                {{/answers}}
+            </ul>
+            {{/ismc}}
+            <div class="d-flex flex-wrap gap-2">
+                {{#canedit}}
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="edit">{{#str}} action_edit, local_aiquestiongen {{/str}}</button>
+                {{/canedit}}
+                {{#ispending}}
+                    <button type="button" class="btn btn-primary btn-sm" data-action="approve">{{#str}} action_approve, local_aiquestiongen {{/str}}</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-action="reject">{{#str}} action_reject, local_aiquestiongen {{/str}}</button>
+                {{/ispending}}
+                {{#isapproved}}
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="undo">{{#str}} action_undo, local_aiquestiongen {{/str}}</button>
+                {{/isapproved}}
+                {{#isrejected}}
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="undo">{{#str}} action_undo, local_aiquestiongen {{/str}}</button>
+                {{/isrejected}}
+                {{#canregenerate}}
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="regenerate">{{#str}} action_regenerate, local_aiquestiongen {{/str}}</button>
+                {{/canregenerate}}
+            </div>
+            {{#regenerating}}
+                <form class="mt-3 border-top pt-3" data-region="regenerate-form" novalidate>
+                    <label class="form-label" for="aiqg-regen-{{id}}">{{#str}} regencomment, local_aiquestiongen {{/str}}</label>
+                    <textarea class="form-control mb-2" id="aiqg-regen-{{id}}" rows="2" maxlength="500" data-field="regencomment"></textarea>
+                    <div class="form-text mb-2">{{#str}} regenhelp, local_aiquestiongen {{/str}}</div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm" data-action="regenerate-go">{{#str}} action_regeneratego, local_aiquestiongen {{/str}}</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-action="cancel">{{#str}} action_cancel, local_aiquestiongen {{/str}}</button>
+                    </div>
+                </form>
+            {{/regenerating}}
+        {{/editing}}
+
+        {{#editing}}
+            <form data-region="edit-form" novalidate>
+                <div class="mb-3">
+                    <label class="form-label" for="aiqg-stem-{{id}}">{{#str}} stemlabel, local_aiquestiongen {{/str}}</label>
+                    <textarea class="form-control" id="aiqg-stem-{{id}}" rows="3" data-field="stem">{{stem}}</textarea>
+                </div>
+                {{#istf}}
+                    <fieldset class="mb-3">
+                        <legend class="h6">{{#str}} tfcorrectlegend, local_aiquestiongen {{/str}}</legend>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" name="aiqg-tf-{{id}}" id="aiqg-tf-{{id}}-true" value="1" data-field="tfcorrect" {{#correcttrue}}checked{{/correcttrue}}>
+                            <label class="form-check-label" for="aiqg-tf-{{id}}-true">{{#str}} true, qtype_truefalse {{/str}}</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" name="aiqg-tf-{{id}}" id="aiqg-tf-{{id}}-false" value="0" data-field="tfcorrect" {{#correctfalse}}checked{{/correctfalse}}>
+                            <label class="form-check-label" for="aiqg-tf-{{id}}-false">{{#str}} false, qtype_truefalse {{/str}}</label>
+                        </div>
+                    </fieldset>
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-fbtrue-{{id}}">{{#str}} feedbackiftrue, local_aiquestiongen {{/str}}</label>
+                        <input type="text" class="form-control" id="aiqg-fbtrue-{{id}}" value="{{feedbacktrue}}" data-field="feedbacktrue">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-fbfalse-{{id}}">{{#str}} feedbackiffalse, local_aiquestiongen {{/str}}</label>
+                        <input type="text" class="form-control" id="aiqg-fbfalse-{{id}}" value="{{feedbackfalse}}" data-field="feedbackfalse">
+                    </div>
+                {{/istf}}
+                {{#isessay}}
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-model-{{id}}">{{#str}} modelanswer, local_aiquestiongen {{/str}}</label>
+                        <textarea class="form-control" id="aiqg-model-{{id}}" rows="5" data-field="modelanswer">{{modelanswer}}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-rubric-{{id}}">{{#str}} markingguide, local_aiquestiongen {{/str}}</label>
+                        <textarea class="form-control" id="aiqg-rubric-{{id}}" rows="4" data-field="rubric">{{rubric}}</textarea>
+                    </div>
+                {{/isessay}}
+                {{#iscloze}}
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-fillanswer-{{id}}">{{#str}} blankanswer, local_aiquestiongen {{/str}}</label>
+                        <input type="text" class="form-control" id="aiqg-fillanswer-{{id}}" value="{{fillanswer}}" data-field="fillanswer">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-alternatives-{{id}}">{{#str}} alsoaccepted, local_aiquestiongen {{/str}}</label>
+                        <textarea class="form-control" id="aiqg-alternatives-{{id}}" rows="3" data-field="alternatives">{{alternatives}}</textarea>
+                        <div class="form-text">{{#str}} onewordperline, local_aiquestiongen {{/str}}</div>
+                    </div>
+                {{/iscloze}}
+                {{#isgap}}
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-fillanswer-{{id}}">{{#str}} blankanswer, local_aiquestiongen {{/str}}</label>
+                        <input type="text" class="form-control" id="aiqg-fillanswer-{{id}}" value="{{fillanswer}}" data-field="fillanswer">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="aiqg-distractors-{{id}}">{{#str}} wrongchoices, local_aiquestiongen {{/str}}</label>
+                        <textarea class="form-control" id="aiqg-distractors-{{id}}" rows="3" data-field="distractors">{{distractors}}</textarea>
+                        <div class="form-text">{{#str}} onewordperline, local_aiquestiongen {{/str}}</div>
+                    </div>
+                {{/isgap}}
+                {{#ismc}}
+                <fieldset class="mb-3">
+                    <legend class="h6">{{#str}} correctlegend, local_aiquestiongen {{/str}}</legend>
+                    {{#answers}}
+                        <div class="border rounded p-2 mb-2" data-region="answer">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <input type="radio" class="form-check-input mt-0" name="aiqg-correct-{{id}}" id="aiqg-correct-{{id}}-{{index}}" value="{{index}}" data-field="correct" {{#correct}}checked{{/correct}}>
+                                <label class="form-label mb-0" for="aiqg-correct-{{id}}-{{index}}">{{#str}} markcorrect, local_aiquestiongen, {{letter}} {{/str}}</label>
+                            </div>
+                            <label class="visually-hidden" for="aiqg-text-{{id}}-{{index}}">{{#str}} answerlabel, local_aiquestiongen, {{letter}} {{/str}}</label>
+                            <input type="text" class="form-control mb-1" id="aiqg-text-{{id}}-{{index}}" value="{{text}}" data-field="text">
+                            <label class="visually-hidden" for="aiqg-feedback-{{id}}-{{index}}">{{#str}} feedbacklabel, local_aiquestiongen, {{letter}} {{/str}}</label>
+                            <input type="text" class="form-control form-control-sm" id="aiqg-feedback-{{id}}-{{index}}" value="{{feedback}}" placeholder="{{#str}} feedbacklabel, local_aiquestiongen, {{letter}} {{/str}}" data-field="feedback">
+                        </div>
+                    {{/answers}}
+                </fieldset>
+                {{/ismc}}
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary btn-sm" data-action="save">{{#str}} action_save, local_aiquestiongen {{/str}}</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="cancel">{{#str}} action_cancel, local_aiquestiongen {{/str}}</button>
+                </div>
+            </form>
+        {{/editing}}
+    </div>
+</div>

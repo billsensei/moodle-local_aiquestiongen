@@ -1,0 +1,73 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+{{!
+    @template local_aiquestiongen/review
+
+    The review page for one finished generation job.
+
+    Example context (json):
+    {
+        "jobid": 3,
+        "sourcetitle": "A short article",
+        "sourcetext": "The article text.",
+        "itemsjson": "[]",
+        "total": 2,
+        "pending": 1,
+        "approved": 1,
+        "rejected": 0,
+        "groups": [
+            {"qtype": "multichoice", "heading": "Multiple choice", "pendingcount": 1, "items": []}
+        ]
+    }
+}}
+<div data-region="review" data-jobid="{{jobid}}" data-items="{{itemsjson}}">
+    <div class="visually-hidden" role="status" aria-live="polite" data-region="live"></div>
+
+    <p class="mb-2" data-region="summary">
+        {{#str}} status_pending, local_aiquestiongen {{/str}}: <strong data-count="pending">{{pending}}</strong> &middot;
+        {{#str}} status_approved, local_aiquestiongen {{/str}}: <strong data-count="approved">{{approved}}</strong> &middot;
+        {{#str}} status_rejected, local_aiquestiongen {{/str}}: <strong data-count="rejected">{{rejected}}</strong> &middot;
+        {{#str}} needschecking, local_aiquestiongen {{/str}}: <strong data-count="flagged">{{flagged}}</strong>
+    </p>
+    <p class="text-muted">{{#str}} publishnote, local_aiquestiongen {{/str}}</p>
+
+    <div class="row">
+        <div class="col-lg-8">
+            {{#groups}}
+                <section class="mb-4" data-region="group" data-qtype="{{qtype}}" aria-labelledby="aiqg-group-{{qtype}}">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                        <h3 class="h5 mb-0" id="aiqg-group-{{qtype}}">{{heading}}</h3>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" data-action="approve-all" data-qtype="{{qtype}}">{{#str}} action_approveall, local_aiquestiongen {{/str}}</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-action="reject-all" data-qtype="{{qtype}}">{{#str}} action_rejectall, local_aiquestiongen {{/str}}</button>
+                        </div>
+                    </div>
+                    <div data-region="items">
+                        {{#items}}
+                            {{> local_aiquestiongen/review_item }}
+                        {{/items}}
+                    </div>
+                </section>
+            {{/groups}}
+        </div>
+        <div class="col-lg-4">
+            <div class="card position-sticky" id="aiqg-source" style="top: 5rem;">
+                <div class="card-header"><h3 class="h6 mb-0">{{#str}} sourcepassage, local_aiquestiongen {{/str}}: {{sourcetitle}}</h3></div>
+                <div class="card-body overflow-auto" style="max-height: 70vh; white-space: pre-wrap;" tabindex="0" role="region" aria-label="{{#str}} sourcepassage, local_aiquestiongen {{/str}}">{{sourcetext}}</div>
+            </div>
+        </div>
+    </div>
+</div>

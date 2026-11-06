@@ -22,6 +22,25 @@ A teacher adds an article. A background task asks an AI model to draft English-a
 3. Open **Site administration > Plugins > Local plugins > AI Question Generator**.
 4. Choose a connection mode (below) and save.
 
+### Installing from the ZIP file
+
+Instead of copying the folder, you can upload `local_aiquestiongen_vX.Y.Z.zip` from the
+[releases page](https://github.com/billsensei/moodle-local_aiquestiongen/releases) at **Site administration > Plugins >
+Install plugins**, then confirm and upgrade. Upload the file exactly as downloaded.
+
+If Moodle says **"The file provided is not a valid plugin ZIP package"**, the ZIP does not have exactly one folder at
+its top level. The usual causes are:
+
+- The ZIP was made again by hand. Compressing a folder in macOS Finder adds a second top-level entry, `__MACOSX`,
+  which is enough to fail. Safari can also unpack a download for you ("Open safe files after downloading"); turn that
+  off and use the file as downloaded.
+- The files of the plugin were zipped without their folder, so `version.php` sits at the top level.
+- The file is not a ZIP (a saved web page, or a `.tar.gz` renamed to `.zip`).
+
+To check a ZIP, run `unzip -l file.zip | head`. Every path should start with the same single folder
+(`aiquestiongen/`; GitHub's own "Source code (zip)" uses `moodle-local_aiquestiongen-X.Y.Z/`, which also works).
+To make a good ZIP yourself, run `zip -r -X aiquestiongen.zip aiquestiongen` in Terminal.
+
 ## Permissions
 
 | Capability | Default roles | Allows |
